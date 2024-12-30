@@ -2,10 +2,11 @@
 //  hoopkitTests.swift
 //  hoopkitTests
 //
-//  Created by CC . on 2024/12/29.
+//  Created by CC . on 2024/12/30.
 //
 
 import Testing
+@testable import hoopkit
 
 struct hoopkitTests {
 
