@@ -13,43 +13,38 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // 主列表视图
+                Color(.systemGroupedBackground)
+                    .ignoresSafeArea()
+                
                 List {
-                    ForEach(records, id: \.wrappedId) { record in
+                    ForEach(records) { record in
                         NavigationLink(destination: RecordDetailView(record: record)) {
-                            RecordRowView(record: record)
+                            RecordRow(record: record)
                         }
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .padding(.vertical, 4)
                     }
                     .onDelete(perform: deleteRecords)
                 }
-                .navigationTitle("记录")
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        NavigationLink(destination: StatisticsView()) {
-                            Image(systemName: "chart.bar.fill")
-                        }
-                    }
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        NavigationLink(destination: SearchView()) {
-                            Image(systemName: "magnifyingglass")
-                        }
+                .listStyle(.plain)
+                
+                // 添加按钮
+                AddButton(showingNewRecord: $showingNewRecord)
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    NavigationLink(destination: StatisticsView()) {
+                        Image(systemName: "chart.bar.fill")
+                            .foregroundColor(.blue)
                     }
                 }
                 
-                // 添加记录按钮
-                VStack {
-                    Spacer()
-                    HStack {
-                        Spacer()
-                        Button(action: { showingNewRecord = true }) {
-                            Image(systemName: "plus.circle.fill")
-                                .resizable()
-                                .frame(width: 60, height: 60)
-                                .foregroundColor(.blue)
-                                .background(Circle().fill(Color.white))
-                                .shadow(radius: 3)
-                        }
-                        .padding()
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NavigationLink(destination: SearchView()) {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.blue)
                     }
                 }
             }
@@ -62,18 +57,13 @@ struct ContentView: View {
     private func deleteRecords(offsets: IndexSet) {
         withAnimation {
             offsets.map { records[$0] }.forEach(viewContext.delete)
-            
-            do {
-                try viewContext.save()
-            } catch {
-                print("删除记录失败: \(error.localizedDescription)")
-            }
+            try? viewContext.save()
         }
     }
 }
 
 // 记录行视图
-struct RecordRowView: View {
+struct RecordRow: View {
     let record: BasketballRecord
     
     var body: some View {
@@ -82,31 +72,61 @@ struct RecordRowView: View {
                 Text(record.wrappedGameType)
                     .font(.headline)
                 Spacer()
-                Text(record.wrappedDate, style: .date)
-                    .font(.subheadline)
+                Text(record.wrappedDate.formatted(date: .abbreviated, time: .shortened))
                     .foregroundColor(.secondary)
             }
             
-            Text(record.wrappedNotes)
-                .lineLimit(2)
-                .font(.subheadline)
+            HStack(spacing: 12) {
+                Label("\(record.duration)分钟", systemImage: "clock")
+                    .foregroundColor(.secondary)
+                Label(String(repeating: "🔥", count: Int(record.intensity)),
+                      systemImage: "flame")
+                    .foregroundColor(.secondary)
+            }
             
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack {
-                    ForEach(record.tagArray, id: \.wrappedId) { tag in
-                        Text(tag.wrappedName)
-                            .font(.caption)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.blue.opacity(0.1))
-                            .cornerRadius(4)
+            if !record.tagArray.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack {
+                        ForEach(record.tagArray) { tag in
+                            Text(tag.wrappedName)
+                                .font(.caption)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.blue.opacity(0.1))
+                                .cornerRadius(8)
+                        }
                     }
                 }
             }
         }
-        .padding(.vertical, 8)
+        .padding()
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
     }
-} 
+}
+
+// 添加按钮
+struct AddButton: View {
+    @Binding var showingNewRecord: Bool
+    
+    var body: some View {
+        VStack {
+            Spacer()
+            HStack {
+                Spacer()
+                Button(action: { showingNewRecord = true }) {
+                    Image(systemName: "plus.circle.fill")
+                        .resizable()
+                        .frame(width: 60, height: 60)
+                        .foregroundColor(.blue)
+                        .background(Circle().fill(Color.white))
+                        .shadow(radius: 3)
+                }
+                .padding()
+            }
+        }
+    }
+}
 
 #Preview {
     ContentView()

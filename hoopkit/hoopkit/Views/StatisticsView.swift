@@ -61,6 +61,14 @@ struct StatisticsView: View {
         }
     }
     
+    private var totalHours: Double {
+        Double(totalDuration) / 60.0
+    }
+    
+    private var averageHours: Double {
+        Double(averageDuration) / 60.0
+    }
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
@@ -87,25 +95,34 @@ struct StatisticsView: View {
                 
                 // 统计卡片
                 VStack(spacing: 20) {
-                    StatCard(
-                        title: "本月打球",
-                        value: "\(filteredRecords.count)",
-                        unit: "次"
-                    )
+                    HStack {
+                        Text("本月打球")
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text("\(filteredRecords.count)次")
+                            .font(.headline)
+                    }
+                    .padding(.horizontal)
                     
-                    StatCard(
-                        title: "总时长",
-                        value: "\(totalDuration)",
-                        unit: "分钟"
-                    )
+                    HStack {
+                        Text("总时长")
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text(String(format: "%.1f小时", totalHours))
+                            .font(.headline)
+                    }
+                    .padding(.horizontal)
                     
-                    StatCard(
-                        title: "平均时长",
-                        value: "\(averageDuration)",
-                        unit: "分钟/次"
-                    )
+                    HStack {
+                        Text("平均时长")
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Text(String(format: "%.1f小时/次", averageHours))
+                            .font(.headline)
+                    }
+                    .padding(.horizontal)
                 }
-                .padding()
+                .padding(.vertical)
                 .background(Color.white)
                 .cornerRadius(12)
                 .shadow(radius: 2)
@@ -127,7 +144,7 @@ struct StatisticsView: View {
             }
             .padding(.vertical)
         }
-        .navigationTitle("统计")
+        .navigationBarTitleDisplayMode(.inline)  // 移除标题
         .background(Color(.systemGroupedBackground))
     }
     

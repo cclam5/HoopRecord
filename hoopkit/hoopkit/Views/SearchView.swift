@@ -6,17 +6,27 @@ struct SearchView: View {
     @State private var searchText = ""
     
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             SearchBar(text: $searchText)
+                .padding(.vertical, 8)
+                .background(Color(.systemBackground))
             
             if searchText.isEmpty {
-                Text("输入关键词开始搜索")
-                    .foregroundColor(.secondary)
+                VStack {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 64))
+                        .foregroundColor(.secondary)
+                        .padding()
+                    Text("输入关键词开始搜索")
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxHeight: .infinity)
             } else {
                 SearchResultList(searchText: searchText)
             }
         }
-        .navigationTitle("搜索")
+        .navigationBarTitleDisplayMode(.inline)
+        .background(Color(.systemGroupedBackground))
     }
 }
 
@@ -55,12 +65,22 @@ struct SearchResultList: View {
     
     var body: some View {
         List {
-            ForEach(records, id: \.wrappedId) { record in
+            ForEach(records) { record in
                 NavigationLink(destination: RecordDetailView(record: record)) {
-                    RecordRowView(record: record)
+                    RecordRow(record: record)
                 }
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+                .padding(.vertical, 4)
             }
         }
+        .listStyle(.plain)
+        .overlay(Group {
+            if records.isEmpty {
+                Text("未找到相关记录")
+                    .foregroundColor(.secondary)
+            }
+        })
     }
 }
 
