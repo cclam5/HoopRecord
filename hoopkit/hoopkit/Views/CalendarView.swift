@@ -2,16 +2,16 @@ import SwiftUI
 
 struct CalendarView: View {
     let records: [BasketballRecord]
+    let selectedDate: Date
     
     private let calendar = Calendar.current
     private let daysInWeek = ["日", "一", "二", "三", "四", "五", "六"]
-    
-    @State private var selectedDate = Date()
+    private let gridColumns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
     
     var body: some View {
-        VStack {
+        VStack(spacing: 8) {
             // 星期标题行
-            HStack {
+            HStack(spacing: 0) {
                 ForEach(daysInWeek, id: \.self) { day in
                     Text(day)
                         .frame(maxWidth: .infinity)
@@ -20,7 +20,7 @@ struct CalendarView: View {
             }
             
             // 日历网格
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7)) {
+            LazyVGrid(columns: gridColumns, spacing: 0) {
                 ForEach(daysInMonth(), id: \.self) { date in
                     if let date = date {
                         DayCell(
@@ -29,18 +29,19 @@ struct CalendarView: View {
                         )
                     } else {
                         Color.clear
-                            .aspectRatio(1, contentMode: .fit)
+                            .aspectRatio(1, contentMode: .fill)
+                            .frame(height: 40)
                     }
                 }
             }
         }
-        .padding()
+        .padding(.horizontal)
     }
     
     private func daysInMonth() -> [Date?] {
         let interval = DateInterval(
-            start: calendar.startOfMonth(),
-            end: calendar.endOfMonth()
+            start: calendar.startOfMonth(for: selectedDate),
+            end: calendar.endOfMonth(for: selectedDate)
         )
         
         let days = calendar.generateDates(
@@ -68,7 +69,7 @@ struct DayCell: View {
     var body: some View {
         Text("\(Calendar.current.component(.day, from: date))")
             .frame(maxWidth: .infinity)
-            .aspectRatio(1, contentMode: .fit)
+            .frame(height: 40)
             .background(hasRecord ? Color.blue.opacity(0.2) : Color.clear)
             .clipShape(Circle())
     }
@@ -88,7 +89,7 @@ extension Calendar {
             matchingPolicy: .nextTime
         ) { date, _, stop in
             if let date = date {
-                if date < interval.end {
+                if date <= interval.end {
                     dates.append(date)
                 } else {
                     stop = true
@@ -98,4 +99,12 @@ extension Calendar {
         
         return dates
     }
+}
+
+#Preview {
+    CalendarView(
+        records: PreviewData.shared.sampleRecords,
+        selectedDate: Date()
+    )
+    .padding()
 } 

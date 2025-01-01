@@ -53,7 +53,7 @@ extension BasketballTag {
 extension BasketballRecord {
     static func create(in context: NSManagedObjectContext,
                       gameType: String,
-                      duration: Int32,
+                      duration: Int16,
                       intensity: Int16,
                       fatigue: Int16,
                       notes: String) -> BasketballRecord {

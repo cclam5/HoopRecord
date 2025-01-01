@@ -62,4 +62,11 @@ struct SearchResultList: View {
             }
         }
     }
+}
+
+#Preview {
+    NavigationView {
+        SearchView()
+            .environment(\.managedObjectContext, PreviewData.shared.context)
+    }
 } 

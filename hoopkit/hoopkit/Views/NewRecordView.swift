@@ -65,7 +65,7 @@ struct NewRecordView: View {
         let record = BasketballRecord.create(
             in: viewContext,
             gameType: gameType,
-            duration: Int32(duration),
+            duration: Int16(duration),
             intensity: Int16(intensity),
             fatigue: Int16(fatigue),
             notes: notes
@@ -87,5 +87,12 @@ struct NewRecordView: View {
         } catch {
             print("保存记录失败: \(error.localizedDescription)")
         }
+    }
+}
+
+#Preview {
+    NavigationView {
+        NewRecordView()
+            .environment(\.managedObjectContext, PreviewData.shared.context)
     }
 } 

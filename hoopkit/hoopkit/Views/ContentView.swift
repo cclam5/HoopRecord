@@ -22,7 +22,7 @@ struct ContentView: View {
                     }
                     .onDelete(perform: deleteRecords)
                 }
-                .navigationTitle("打球记录")
+                .navigationTitle("记录")
                 .toolbar {
                     ToolbarItem(placement: .navigationBarLeading) {
                         NavigationLink(destination: StatisticsView()) {
@@ -106,4 +106,9 @@ struct RecordRowView: View {
         }
         .padding(.vertical, 8)
     }
+} 
+
+#Preview {
+    ContentView()
+        .environment(\.managedObjectContext, PreviewData.shared.context)
 } 
