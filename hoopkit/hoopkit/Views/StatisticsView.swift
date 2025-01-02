@@ -4,6 +4,7 @@ import CoreData
 struct StatisticsView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @State private var selectedDate = Date()
+    @Environment(\.dismiss) private var dismiss
     
     var startOfMonth: Date {
         let calendar = Calendar.current
@@ -76,7 +77,7 @@ struct StatisticsView: View {
                 HStack {
                     Button(action: previousMonth) {
                         Image(systemName: "chevron.left")
-                            .foregroundColor(.blue)
+                            .foregroundColor(.themeColor)
                             .imageScale(.large)
                     }
                     
@@ -87,7 +88,7 @@ struct StatisticsView: View {
                     
                     Button(action: nextMonth) {
                         Image(systemName: "chevron.right")
-                            .foregroundColor(.blue)
+                            .foregroundColor(.themeColor)
                             .imageScale(.large)
                     }
                 }
@@ -144,7 +145,16 @@ struct StatisticsView: View {
             }
             .padding(.vertical)
         }
-        .navigationBarTitleDisplayMode(.inline)  // 移除标题
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
+                    Image(systemName: "chevron.left")
+                        .foregroundColor(.themeColor)
+                        .imageScale(.large)
+                }
+            }
+        }
         .background(Color(.systemGroupedBackground))
     }
     

@@ -95,6 +95,7 @@ struct RecordDetailView: View {
                     }
                     isEditing.toggle()
                 }
+                .foregroundColor(.themeColor)
             }
         }
         .sheet(isPresented: $showingDatePicker) {

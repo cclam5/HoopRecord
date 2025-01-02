@@ -3,13 +3,38 @@ import CoreData
 
 struct SearchView: View {
     @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.dismiss) private var dismiss
     @State private var searchText = ""
     
     var body: some View {
         VStack(spacing: 0) {
-            SearchBar(text: $searchText)
-                .padding(.vertical, 8)
-                .background(Color(.systemBackground))
+            HStack {
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.secondary)
+                    
+                    TextField("搜索记录", text: $searchText)
+                        .textFieldStyle(PlainTextFieldStyle())
+                    
+                    if !searchText.isEmpty {
+                        Button(action: { searchText = "" }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                .padding(8)
+                .background(Color(.systemGray6))
+                .cornerRadius(8)
+                
+                Button(action: { dismiss() }) {
+                    Text("取消")
+                        .foregroundColor(.themeColor)
+                }
+                .padding(.leading, 8)
+            }
+            .padding()
+            .background(Color(.systemBackground))
             
             if searchText.isEmpty {
                 VStack {
@@ -25,7 +50,7 @@ struct SearchView: View {
                 SearchResultList(searchText: searchText)
             }
         }
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarHidden(true)
         .background(Color(.systemGroupedBackground))
     }
 }
@@ -36,7 +61,7 @@ struct SearchBar: View {
     var body: some View {
         HStack {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.secondary)
+                .foregroundColor(.themeColor)
             
             TextField("搜索记录", text: $text)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -44,7 +69,7 @@ struct SearchBar: View {
             if !text.isEmpty {
                 Button(action: { text = "" }) {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.themeColor)
                 }
             }
         }
