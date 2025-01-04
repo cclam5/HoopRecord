@@ -172,7 +172,7 @@ struct RecordRow: View {
                     .foregroundColor(.secondary)
                 
                 Button(action: { showingDetail = true }) {
-                    Image(systemName: "pencil.circle.fill")
+                    Image(systemName: "pencil")
                         .foregroundColor(.themeColor)
                         .imageScale(.large)
                 }
