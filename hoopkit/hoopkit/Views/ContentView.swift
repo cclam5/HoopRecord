@@ -155,7 +155,6 @@ struct RecordRow: View {
     let record: BasketballRecord
     @State private var showingDetail = false
     
-    // 添加时间格式化计算属性
     private var durationInHours: String {
         let hours = Double(record.duration) / 60.0
         return String(format: "%.1f小时", hours)
@@ -163,6 +162,7 @@ struct RecordRow: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+            // 1. 类型和时间
             HStack {
                 Text(record.wrappedGameType)
                     .font(.headline)
@@ -178,14 +178,25 @@ struct RecordRow: View {
                 }
             }
             
+            // 2. 时长和强度
             HStack(spacing: 12) {
-                Label(durationInHours, systemImage: "clock")  // 使用小时显示
+                Label(durationInHours, systemImage: "clock")
                     .foregroundColor(.secondary)
                 Label(String(repeating: "🔥", count: Int(record.intensity)),
                       systemImage: "flame")
                     .foregroundColor(.secondary)
             }
             
+            // 3. 心得（如果有）
+            if let notes = record.notes, !notes.isEmpty {
+                Text(notes)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .lineLimit(2)
+                    .padding(.vertical, 2)
+            }
+            
+            // 4. 标签（如果有）
             if !record.tagArray.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
