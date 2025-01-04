@@ -1,27 +1,29 @@
 import SwiftUI
+import CoreData
 
 struct TagSelectionView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.dismiss) private var dismiss
-    @Binding var selectedTags: Set<Tag>
-    @State private var newTagName = ""
+    @Binding var selectedTags: Set<BasketballTag>
     
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Tag.name, ascending: true)],
-        animation: .default)
-    private var tags: FetchedResults<Tag>
+    @State private var newTagName: String = ""
+    @State private var showError = false
+    @State private var errorMessage = ""
+    @State private var tags: [BasketballTag] = []
     
     var body: some View {
         NavigationView {
             List {
                 Section {
-                    HStack {
-                        TextField("新标签", text: $newTagName)
-                        Button("添加") {
-                            addTag()
+                    TextField("输入标签名称，空格键添加", text: $newTagName)
+                        .onSubmit {
+                            addTagIfNeeded()
                         }
-                        .disabled(newTagName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    }
+                        .onChange(of: newTagName) { oldValue, newValue in
+                            if newValue.last == " " {
+                                addTagIfNeeded()
+                            }
+                        }
                 }
                 
                 Section {
@@ -31,7 +33,7 @@ struct TagSelectionView: View {
                             Spacer()
                             if selectedTags.contains(tag) {
                                 Image(systemName: "checkmark")
-                                    .foregroundColor(.themeColor)
+                                    .foregroundColor(.blue)
                             }
                         }
                         .contentShape(Rectangle())
@@ -48,34 +50,68 @@ struct TagSelectionView: View {
                     Button("完成") {
                         dismiss()
                     }
-                    .foregroundColor(.themeColor)
                 }
+            }
+            .alert("错误", isPresented: $showError) {
+                Button("确定", role: .cancel) { }
+            } message: {
+                Text(errorMessage)
+            }
+            .onAppear {
+                loadTags()
             }
         }
     }
     
-    private func addTag() {
-        let trimmedName = newTagName.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedName.isEmpty else { return }
-        
-        let tag = Tag(context: viewContext)
-        tag.id = UUID()
-        tag.name = trimmedName
+    private func loadTags() {
+        let request = BasketballTag.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \BasketballTag.name, ascending: true)]
         
         do {
-            try viewContext.save()
-            selectedTags.insert(tag)
-            newTagName = ""
+            tags = try viewContext.fetch(request)
         } catch {
-            print("Error saving tag: \(error)")
+            errorMessage = "加载标签失败：\(error.localizedDescription)"
+            showError = true
         }
     }
     
-    private func toggleTag(_ tag: Tag) {
-        if selectedTags.contains(tag) {
-            selectedTags.remove(tag)
-        } else {
-            selectedTags.insert(tag)
+    private func addTagIfNeeded() {
+        let trimmedName = newTagName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty else {
+            newTagName = ""
+            return
+        }
+        
+        // 检查重复
+        if tags.contains(where: { $0.name == trimmedName }) {
+            errorMessage = "已存在相同名称的标签"
+            showError = true
+            newTagName = ""
+            return
+        }
+        
+        // 创建新标签
+        let newTag = BasketballTag(context: viewContext)
+        newTag.name = trimmedName
+        newTag.id = UUID()
+        
+        do {
+            try viewContext.save()
+            newTagName = ""
+            loadTags()
+        } catch {
+            errorMessage = "保存标签失败：\(error.localizedDescription)"
+            showError = true
+        }
+    }
+    
+    private func toggleTag(_ tag: BasketballTag) {
+        withAnimation {
+            if selectedTags.contains(tag) {
+                selectedTags.remove(tag)
+            } else {
+                selectedTags.insert(tag)
+            }
         }
     }
 } 

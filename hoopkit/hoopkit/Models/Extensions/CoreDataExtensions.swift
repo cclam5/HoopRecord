@@ -39,8 +39,7 @@ extension BasketballTag {
     }
     
     var wrappedName: String {
-        get { name ?? "" }
-        set { name = newValue }
+        name ?? "未命名标签"
     }
     
     var recordArray: [BasketballRecord] {

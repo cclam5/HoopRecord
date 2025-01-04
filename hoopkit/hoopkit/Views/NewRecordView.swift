@@ -12,7 +12,8 @@ struct NewRecordView: View {
     @State private var intensity = 3
     @State private var notes = ""
     @State private var showingTagSheet = false
-    @State private var selectedTags: Set<Tag> = []
+    @State private var selectedTags = Set<BasketballTag>()
+    @State private var newTagName: String = ""
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -25,92 +26,85 @@ struct NewRecordView: View {
             
             NavigationView {
                 VStack(spacing: 0) {
-                    // 内容区域
-                    ScrollView {
-                        VStack(spacing: 0) {
-                            // 类型和强度部分
-                            VStack(spacing: 16) {
-                                // 类型和强度放在同一行
-                                HStack {
-                                    Text("类型")
-                                        .foregroundColor(.secondary)
-                                    
-                                    Menu {
-                                        ForEach(gameTypes, id: \.self) { type in
-                                            Button(action: { gameType = type }) {
-                                                HStack {
-                                                    Text(type)
-                                                    if gameType == type {
-                                                        Image(systemName: "checkmark")
-                                                            .foregroundColor(.themeColor)
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    } label: {
+                    // 上部分内容：紧凑布局
+                    VStack(spacing: 12) {  // 减小间距
+                        // 类型和强度放在同一行
+                        HStack {
+                            Text("类型")
+                                .foregroundColor(.secondary)
+                            
+                            Menu {
+                                ForEach(gameTypes, id: \.self) { type in
+                                    Button(action: { gameType = type }) {
                                         HStack {
-                                            Text(gameType)
-                                                .foregroundColor(.primary)
-                                            Image(systemName: "chevron.down")
-                                                .foregroundColor(.secondary)
-                                                .font(.system(size: 14))
-                                        }
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 6)
-                                        .background(Color(.systemGray6))
-                                        .cornerRadius(8)
-                                    }
-                                    
-                                    Spacer()
-                                    
-                                    Text("强度")
-                                        .foregroundColor(.secondary)
-                                    HStack(spacing: 4) {
-                                        ForEach(1...5, id: \.self) { index in
-                                            Button(action: { intensity = index }) {
-                                                Image(systemName: index <= intensity ? "flame.fill" : "flame")
-                                                    .foregroundColor(index <= intensity ? .themeColor : .gray)
+                                            Text(type)
+                                            if gameType == type {
+                                                Image(systemName: "checkmark")
+                                                    .foregroundColor(.themeColor)
                                             }
                                         }
                                     }
                                 }
-                                
-                                // 时长滑动条
-                                VStack(alignment: .leading, spacing: 8) {
-                                    HStack {
-                                        Text("时长")
-                                        Spacer()
-                                        Text("\(Int(duration))分钟")
-                                            .foregroundColor(.secondary)
-                                    }
-                                    
-                                    Slider(value: $duration,
-                                           in: 0...240,
-                                           step: 1)
-                                                .accentColor(.themeColor)
-                                            
-                                    ScrollView(.horizontal, showsIndicators: false) {
-                                        HStack(spacing: 12) {
-                                            ForEach([30, 60, 90, 120], id: \.self) { mins in
-                                                Button(action: { duration = Double(mins) }) {
-                                                    Text("\(mins)")
-                                                        .font(.footnote)
-                                                        .padding(.horizontal, 12)
-                                                        .padding(.vertical, 6)
-                                                        .background(duration == Double(mins) ? Color.themeColor : Color(.systemGray6))
-                                                        .foregroundColor(duration == Double(mins) ? .white : .primary)
-                                                        .cornerRadius(8)
-                                                }
-                                            }
-                                        }
+                            } label: {
+                                HStack {
+                                    Text(gameType)
+                                        .foregroundColor(.primary)
+                                    Image(systemName: "chevron.down")
+                                        .foregroundColor(.secondary)
+                                        .font(.system(size: 14))
+                                }
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(Color(.systemGray6))
+                                .cornerRadius(8)
+                            }
+                            
+                            Spacer()
+                            
+                            Text("强度")
+                                .foregroundColor(.secondary)
+                            HStack(spacing: 4) {
+                                ForEach(1...5, id: \.self) { index in
+                                    Button(action: { intensity = index }) {
+                                        Image(systemName: index <= intensity ? "flame.fill" : "flame")
+                                            .foregroundColor(index <= intensity ? .themeColor : .gray)
                                     }
                                 }
                             }
-                            .padding()
+                        }
+                        
+                        // 时长滑动条
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text("时长")
+                                Spacer()
+                                Text("\(Int(duration))分钟")
+                                    .foregroundColor(.secondary)
+                            }
                             
-                            Divider()
-                            
-                            // 心得部分
+                            Slider(value: $duration,
+                                   in: 0...240,
+                                   step: 1)
+                                                .accentColor(.themeColor)
+                                            
+                            HStack(spacing: 8) {
+                                ForEach([30, 60, 90, 120, 150, 180, 210], id: \.self) { mins in
+                                    Button(action: { duration = Double(mins) }) {
+                                        Text("\(mins)")
+                                            .font(.footnote)
+                                            .padding(.horizontal, 12)
+                                            .padding(.vertical, 6)
+                                            .background(duration == Double(mins) ? Color.themeColor : Color(.systemGray6))
+                                            .foregroundColor(duration == Double(mins) ? .white : .themeColor)
+                                            .cornerRadius(8)
+                                    }
+                                }
+                            }
+                        }
+                        
+                        Divider()
+                        // 心得文本框
+                        ScrollView {
                             TextEditor(text: $notes)
                                 .frame(minHeight: 100)
                                 .overlay(
@@ -125,49 +119,52 @@ struct NewRecordView: View {
                                     alignment: .topLeading
                                 )
                                 .padding()
-                            
-                            Divider()
-                            
-                            // 标签部分
-                            VStack(alignment: .leading, spacing: 12) {
-                                if selectedTags.isEmpty {
-                                    Button(action: { showingTagSheet = true }) {
-                                        HStack {
-                                            Image(systemName: "tag")
-                                            Text("添加标签")
-                                        }
-                                        .foregroundColor(.themeColor)
+                        }
+                        .frame(maxHeight: 150)
+                    }
+                    .padding()
+                    
+                    Spacer()  // 添加弹性空间
+                    
+                    Divider()
+                    
+                    // 底部标签栏
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            TextField("输入标签名称，空格键添加", text: $newTagName)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .onSubmit {
+                                    addTagIfNeeded()
+                                }
+                                .onChange(of: newTagName) { oldValue, newValue in
+                                    if newValue.last == " " {
+                                        addTagIfNeeded()
                                     }
-                                } else {
-                                    ScrollView(.horizontal, showsIndicators: false) {
-                                        HStack(spacing: 8) {
-                                            ForEach(Array(selectedTags)) { tag in
-                                                HStack {
-                                                    Text(tag.wrappedName)
-                                                    Button(action: { selectedTags.remove(tag) }) {
-                                                        Image(systemName: "xmark.circle.fill")
-                                                            .foregroundColor(.secondary)
-                                                    }
-                                                }
-                                                .padding(.horizontal, 10)
-                                                .padding(.vertical, 6)
-                                                .background(Color(.systemGray6))
-                                                .cornerRadius(15)
+                                }
+                        }
+                        
+                        if !selectedTags.isEmpty {
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 8) {
+                                    ForEach(Array(selectedTags)) { tag in
+                                        HStack {
+                                            Text(tag.wrappedName)
+                                            Button(action: { selectedTags.remove(tag) }) {
+                                                Image(systemName: "xmark.circle.fill")
+                                                    .foregroundColor(.secondary)
                                             }
-                                            
-                                            Button(action: { showingTagSheet = true }) {
-                                                Image(systemName: "plus.circle.fill")
-                                                    .foregroundColor(.themeColor)
-                                            }
-                                            .padding(.leading, 4)
                                         }
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 6)
+                                        .background(Color(.systemGray6))
+                                        .cornerRadius(15)
                                     }
                                 }
                             }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding()
                         }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
                 }
                 .background(
                     Color(.systemBackground)
@@ -196,9 +193,6 @@ struct NewRecordView: View {
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
         .ignoresSafeArea()
-        .sheet(isPresented: $showingTagSheet) {
-            TagSelectionView(selectedTags: $selectedTags)
-        }
     }
     
     private func saveRecord() {
@@ -220,6 +214,34 @@ struct NewRecordView: View {
             } catch {
                 print("Error saving record: \(error)")
             }
+        }
+    }
+    
+    private func addTagIfNeeded() {
+        let trimmedName = newTagName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty else {
+            newTagName = ""
+            return
+        }
+        
+        // 检查是否已存在该标签
+        let request = BasketballTag.fetchRequest()
+        request.predicate = NSPredicate(format: "name == %@", trimmedName)
+        
+        do {
+            let existingTags = try viewContext.fetch(request)
+            if let existingTag = existingTags.first {
+                selectedTags.insert(existingTag)
+            } else {
+                let newTag = BasketballTag(context: viewContext)
+                newTag.id = UUID()
+                newTag.name = trimmedName
+                try viewContext.save()
+                selectedTags.insert(newTag)
+            }
+            newTagName = ""
+        } catch {
+            print("Error adding tag: \(error)")
         }
     }
 }
