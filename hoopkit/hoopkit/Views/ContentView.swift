@@ -124,7 +124,7 @@ struct ContentView: View {
             }
             .navigationBarHidden(true)
         }
-        .sheet(isPresented: $showingNewRecord) {
+        .fullScreenCover(isPresented: $showingNewRecord) {
             NewRecordView()
         }
     }
