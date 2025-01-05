@@ -217,9 +217,7 @@ struct RecordRow: View {
         .background(Color(.systemBackground))
         .cornerRadius(12)
         .sheet(isPresented: $showingDetail) {
-            NavigationView {
                 RecordDetailView(record: record)
-            }
         }
     }
 }
