@@ -121,6 +121,7 @@ struct ContentView: View {
                         .padding(.bottom, 16)
                     }
                 }
+
             }
             .navigationBarHidden(true)
         }
@@ -260,3 +261,4 @@ struct ContentHeightKey: PreferenceKey {
     ContentView()
         .environment(\.managedObjectContext, PreviewData.shared.context)
 } 
+

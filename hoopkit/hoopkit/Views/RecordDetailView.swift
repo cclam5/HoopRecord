@@ -3,82 +3,203 @@ import SwiftUI
 struct RecordDetailView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.dismiss) private var dismiss
-    
-    let record: BasketballRecord
     @State private var isEditing = false
-    @State private var editedDate = Date()
-    @State private var showingDatePicker = false
+    @State private var showingTagSheet = false
+    @State private var selectedTags: Set<BasketballTag>
+    @State private var newTagName = ""
+    
+    // 编辑状态的临时变量
+    @State private var editedGameType: String
+    @State private var editedDuration: Double
+    @State private var editedIntensity: Int
+    @State private var editedNotes: String
+    
+    // 添加时间编辑状态
+    @State private var editedDate: Date
+    
+    private let gameTypes = ["个人训练", "队内训练", "1v1", "2v2", "3v3", "4v4", "5v5"]
+    let record: BasketballRecord
+    
+    @State private var suggestedTags: [BasketballTag] = []  // 添加建议标签数组
+    
+    init(record: BasketballRecord) {
+        self.record = record
+        _editedGameType = State(initialValue: record.gameType ?? "")
+        _editedDuration = State(initialValue: Double(record.duration))
+        _editedIntensity = State(initialValue: Int(record.intensity))
+        _editedNotes = State(initialValue: record.notes ?? "")
+        _selectedTags = State(initialValue: Set(record.tagArray))
+        _editedDate = State(initialValue: record.date ?? Date())  // 初始化时间
+    }
     
     var body: some View {
-        List {
-            Section {
-                // 日期行
-                HStack {
-                    Label("日期", systemImage: "calendar")
-                    Spacer()
-                    if isEditing {
-                        Button(action: { showingDatePicker = true }) {
-                            Text(editedDate.formatted(date: .long, time: .shortened))
-                                .foregroundColor(.blue)
-                        }
-                    } else {
-                        Text(record.wrappedDate.formatted(date: .long, time: .shortened))
+        NavigationView {
+            VStack(spacing: 0) {
+                // 时间选择部分
+                VStack(spacing: 12) {
+                    HStack {
+                        Text("时间")
                             .foregroundColor(.secondary)
+                        
+                        Spacer()
+                        
+                        if isEditing {
+                            DatePicker("", selection: $editedDate)
+                                .labelsHidden()
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                        } else {
+                            Text(record.wrappedDate.formatted(date: .abbreviated, time: .shortened))
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(Color(.systemGray6))
+                                .cornerRadius(8)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    Divider()
+                }
+                .padding(.horizontal)
+                .padding(.bottom)
+                
+                // 上部分内容：紧凑布局
+                VStack(spacing: 12) {
+                    typeAndIntensitySection
+                    durationSection
+                    Divider()
+                }
+                .padding()
+                
+                // 心得文本区域（固定在标签栏上方）
+                GeometryReader { geometry in
+                    notesSection
+                        .frame(height: geometry.size.height)
+                }
+                
+                Divider()
+                
+                // 底部标签栏
+                tagSection
+            }
+            .navigationTitle("记录详情")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                toolbarContent
+            }
+        }
+    }
+    
+    private var mainContent: some View {
+        VStack(spacing: 12) {
+            typeAndIntensitySection
+            durationSection
+            Divider()
+            notesSection
+        }
+        .padding()
+    }
+    
+    private var typeAndIntensitySection: some View {
+        HStack {
+            Text("类型")
+                .foregroundColor(.secondary)
+            
+            if isEditing {
+                gameTypeMenu
+            } else {
+                gameTypeText
+            }
+            
+            Spacer()
+            
+            Text("强度")
+                .foregroundColor(.secondary)
+            intensityButtons
+        }
+    }
+    
+    private var gameTypeMenu: some View {
+        Menu {
+            ForEach(gameTypes, id: \.self) { type in
+                Button(action: { editedGameType = type }) {
+                    HStack {
+                        Text(type)
+                        if editedGameType == type {
+                            Image(systemName: "checkmark")
+                                .foregroundColor(.themeColor)
+                        }
                     }
                 }
-                
-                // 比赛类型
-                HStack {
-                    Label("类型", systemImage: "figure.basketball")
-                    Spacer()
-                    Text(record.wrappedGameType)
-                        .foregroundColor(.secondary)
-                }
-                
-                // 时长
-                HStack {
-                    Label("时长", systemImage: "clock")
-                    Spacer()
-                    Text("\(record.duration) 分钟")
-                        .foregroundColor(.secondary)
+            }
+        } label: {
+            HStack {
+                Text(editedGameType)
+                    .foregroundColor(.primary)
+                Image(systemName: "chevron.down")
+                    .foregroundColor(.secondary)
+                    .font(.system(size: 14))
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Color(.systemGray6))
+            .cornerRadius(8)
+        }
+    }
+    
+    private var gameTypeText: some View {
+        Text(record.wrappedGameType)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Color(.systemGray6))
+            .cornerRadius(8)
+    }
+    
+    private var intensityButtons: some View {
+        HStack(spacing: 4) {
+            ForEach(1...5, id: \.self) { index in
+                if isEditing {
+                    Button(action: { editedIntensity = index }) {
+                        intensityImage(for: index, isEditing: true)
+                    }
+                } else {
+                    intensityImage(for: index, isEditing: false)
                 }
             }
-            
-            Section("感受") {
-                // 强度
-                HStack {
-                    Label("强度", systemImage: "flame")
-                    Spacer()
-                    Text(String(repeating: "🔥", count: Int(record.intensity)))
-                        .foregroundColor(.secondary)
-                }
-                
-                // 疲劳度
-                HStack {
-                    Label("疲劳", systemImage: "battery.75")
-                    Spacer()
-                    Text(String(repeating: "💪", count: Int(record.fatigue)))
-                        .foregroundColor(.secondary)
-                }
+        }
+    }
+    
+    private func intensityImage(for index: Int, isEditing: Bool) -> some View {
+        let currentIntensity = isEditing ? editedIntensity : Int(record.intensity)
+        return Image(systemName: index <= currentIntensity ? "flame.fill" : "flame")
+            .foregroundColor(index <= currentIntensity ? .themeColor : .gray)
+    }
+    
+    private var durationSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("时长")
+                Spacer()
+                Text("\(isEditing ? Int(editedDuration) : Int(record.duration))分钟")
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(8)
             }
             
-            if !record.wrappedNotes.isEmpty {
-                Section("笔记") {
-                    Text(record.wrappedNotes)
-                        .foregroundColor(.secondary)
-                }
-            }
-            
-            if !record.tagArray.isEmpty {
-                Section("标签") {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack {
-                            ForEach(record.tagArray) { tag in
-                                Text(tag.wrappedName)
-                                    .font(.caption)
+            if isEditing {
+                VStack(spacing: 8) {
+                    Slider(value: $editedDuration, in: 0...240, step: 1)
+                        .accentColor(.themeColor)
+                    
+                    HStack(spacing: 8) {
+                        ForEach([30, 60, 90, 120, 150, 180, 210], id: \.self) { mins in
+                            Button(action: { editedDuration = Double(mins) }) {
+                                Text("\(mins)")
+                                    .font(.footnote)
                                     .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color.blue.opacity(0.1))
+                                    .padding(.vertical, 6)
+                                    .background(editedDuration == Double(mins) ? Color.themeColor : Color(.systemGray6))
+                                    .foregroundColor(editedDuration == Double(mins) ? .white : .themeColor)
                                     .cornerRadius(8)
                             }
                         }
@@ -86,8 +207,166 @@ struct RecordDetailView: View {
                 }
             }
         }
-        .navigationTitle("记录详情")
-        .toolbar {
+    }
+    
+    private var notesSection: some View {
+        Group {
+            if isEditing {
+                ScrollView {
+                    TextEditor(text: $editedNotes)
+                        .frame(minHeight: 100)
+                        .overlay(
+                            Group {
+                                if editedNotes.isEmpty {
+                                    Text("记录今天的心得...")
+                                        .foregroundColor(.secondary)
+                                        .padding(.leading, 4)
+                                        .padding(.top, 8)
+                                }
+                            },
+                            alignment: .topLeading
+                        )
+                        .padding()
+                        .background(Color(.systemBackground))
+                        .cornerRadius(8)
+                }
+                .padding()
+            } else {
+                ScrollView {
+                    Text(record.wrappedNotes)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding()
+                }
+                .padding()
+            }
+        }
+    }
+    
+    private var tagSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if isEditing {
+                // 标签输入框和建议列表
+                VStack(alignment: .leading) {
+                    TextField("输入标签名称，空格键添加", text: $newTagName)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .onChange(of: newTagName) { oldValue, newValue in
+                            if newValue.last == " " {
+                                addTagIfNeeded()
+                            } else {
+                                updateSuggestedTags(for: newValue)
+                            }
+                        }
+                        .onSubmit {
+                            addTagIfNeeded()
+                        }
+                    
+                    // 建议标签列表
+                    if !suggestedTags.isEmpty && !newTagName.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(suggestedTags) { tag in
+                                    Button(action: {
+                                        selectSuggestedTag(tag)
+                                    }) {
+                                        Text(tag.wrappedName)
+                                            .padding(.horizontal, 10)
+                                            .padding(.vertical, 6)
+                                            .background(Color(.systemGray6))
+                                            .cornerRadius(15)
+                                    }
+                                }
+                            }
+                        }
+                        .transition(.opacity)
+                    }
+                }
+            }
+            
+            // 已选标签显示
+            if !selectedTags.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(Array(selectedTags)) { tag in
+                            HStack {
+                                Text(tag.wrappedName)
+                                if isEditing {
+                                    Button(action: {
+                                        selectedTags.remove(tag)
+                                    }) {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .foregroundColor(.secondary)
+                                            .font(.system(size: 12))
+                                    }
+                                }
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(15)
+                        }
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .sheet(isPresented: $showingTagSheet) {
+            TagSelectionView(selectedTags: $selectedTags)
+        }
+    }
+    
+    private func addTagIfNeeded() {
+        let tagName = newTagName.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !tagName.isEmpty {
+            // 检查是否已存在同名标签
+            let request = BasketballTag.fetchRequest()
+            request.predicate = NSPredicate(format: "name ==[cd] %@", tagName)
+            
+            do {
+                let existingTags = try viewContext.fetch(request)
+                if let existingTag = existingTags.first {
+                    // 如果存在同名标签，使用已有的
+                    selectedTags.insert(existingTag)
+                } else {
+                    // 如果不存在，创建新标签
+                    let tag = BasketballTag(context: viewContext)
+                    tag.id = UUID()
+                    tag.name = tagName
+                    selectedTags.insert(tag)
+                }
+            } catch {
+                print("Error checking existing tags: \(error)")
+            }
+            
+            newTagName = ""
+            suggestedTags = []
+        }
+    }
+    
+    private func saveChanges() {
+        record.gameType = editedGameType
+        record.duration = Int16(editedDuration)
+        record.intensity = Int16(editedIntensity)
+        record.notes = editedNotes
+        record.date = editedDate  // 保存编辑后的时间
+        record.tags = NSSet(array: Array(selectedTags))
+        
+        do {
+            try viewContext.save()
+        } catch {
+            print("Error saving changes: \(error)")
+        }
+    }
+    
+    private var toolbarContent: some ToolbarContent {
+        Group {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button("关闭") {
+                    dismiss()
+                }
+                .foregroundColor(.themeColor)
+            }
+            
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(isEditing ? "保存" : "编辑") {
                     if isEditing {
@@ -98,52 +377,44 @@ struct RecordDetailView: View {
                 .foregroundColor(.themeColor)
             }
         }
-        .sheet(isPresented: $showingDatePicker) {
-            DatePickerSheet(date: $editedDate, isPresented: $showingDatePicker)
-        }
-        .onAppear {
-            editedDate = record.wrappedDate
-        }
     }
     
-    private func saveChanges() {
-        record.date = editedDate
+    // 更新建议标签列表
+    private func updateSuggestedTags(for input: String) {
+        guard !input.isEmpty else {
+            suggestedTags = []
+            return
+        }
+        
+        let request = BasketballTag.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \BasketballTag.name, ascending: true)]
+        
+        // 修改查询条件，使用 BEGINSWITH 而不是 CONTAINS
+        request.predicate = NSPredicate(format: "name BEGINSWITH[cd] %@", input)
         
         do {
-            try viewContext.save()
-            print("成功更新记录日期")
+            let allMatchingTags = try viewContext.fetch(request)
+            // 使用字典来去重，以标签名为键
+            var uniqueTagsDict: [String: BasketballTag] = [:]
+            for tag in allMatchingTags {
+                uniqueTagsDict[tag.wrappedName] = tag
+            }
+            
+            // 转换回数组并过滤已选择的标签
+            suggestedTags = Array(uniqueTagsDict.values)
+                .filter { !selectedTags.contains($0) }
+                .sorted { $0.wrappedName < $1.wrappedName }
         } catch {
-            print("更新记录失败: \(error)")
+            print("Error fetching suggested tags: \(error)")
+            suggestedTags = []
         }
     }
-}
-
-// 日期选择器sheet
-struct DatePickerSheet: View {
-    @Binding var date: Date
-    @Binding var isPresented: Bool
     
-    var body: some View {
-        NavigationView {
-            VStack {
-                DatePicker(
-                    "选择日期",
-                    selection: $date,
-                    displayedComponents: [.date, .hourAndMinute]
-                )
-                .datePickerStyle(.graphical)
-                .padding()
-            }
-            .navigationTitle("选择日期")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("完成") {
-                        isPresented = false
-                    }
-                }
-            }
-        }
+    // 选择建议标签
+    private func selectSuggestedTag(_ tag: BasketballTag) {
+        selectedTags.insert(tag)
+        newTagName = ""
+        suggestedTags = []
     }
 }
 
