@@ -16,6 +16,7 @@ struct CalendarView: View {
                     Text(day)
                         .frame(maxWidth: .infinity)
                         .font(.caption)
+                        .foregroundColor(.secondary)
                 }
             }
             
@@ -25,7 +26,8 @@ struct CalendarView: View {
                     if let date = date {
                         DayCell(
                             date: date,
-                            hasRecord: hasRecord(on: date)
+                            hasRecord: hasRecord(on: date),
+                            duration: getDuration(for: date)
                         )
                     } else {
                         Color.clear
@@ -60,18 +62,51 @@ struct CalendarView: View {
             calendar.isDate(record.wrappedDate, inSameDayAs: date)
         }
     }
+    
+    private func getDuration(for date: Date) -> Int {
+        records.filter { record in
+            calendar.isDate(record.wrappedDate, inSameDayAs: date)
+        }.reduce(0) { $0 + Int($1.duration) }
+    }
 }
 
 struct DayCell: View {
     let date: Date
     let hasRecord: Bool
+    let duration: Int
+    
+    // 增加透明度值，使颜色更深
+    private func getOpacity(for intensity: Int) -> Double {
+        let opacities: [Int: Double] = [
+            1: 0.3,  // 很轻松
+            2: 0.45, // 轻松
+            3: 0.6,  // 适中
+            4: 0.75, // 疲劳
+            5: 0.9   // 非常疲劳
+        ]
+        return opacities[intensity] ?? 0.3
+    }
     
     var body: some View {
-        Text("\(Calendar.current.component(.day, from: date))")
-            .frame(maxWidth: .infinity)
-            .frame(height: 40)
-            .background(hasRecord ? Color.blue.opacity(0.2) : Color.clear)
-            .clipShape(Circle())
+        VStack(spacing: 2) {
+            Text("\(Calendar.current.component(.day, from: date))")
+                .font(.system(size: 14))
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 40)
+        .background(
+            hasRecord ? 
+                Color.green.opacity(getOpacity(for: getIntensity())) : 
+                Color.clear
+        )
+        .clipShape(Circle())
+    }
+    
+    // 获取当天记录的强度
+    private func getIntensity() -> Int {
+        // 这里需要根据你的数据模型来获取强度值
+        // 假设记录中有 intensity 属性
+        return 3 // 默认返回中等强度，需要根据实际数据修改
     }
 }
 
