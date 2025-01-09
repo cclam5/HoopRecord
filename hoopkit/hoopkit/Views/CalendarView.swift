@@ -5,7 +5,7 @@ struct CalendarView: View {
     let selectedDate: Date
     
     private let calendar = Calendar.current
-    private let daysInWeek = ["日", "一", "二", "三", "四", "五", "六"]
+    private let daysInWeek = ["一", "二", "三", "四", "五", "六", "日"]
     private let gridColumns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
     
     var body: some View {
@@ -27,7 +27,8 @@ struct CalendarView: View {
                         DayCell(
                             date: date,
                             hasRecord: hasRecord(on: date),
-                            duration: getDuration(for: date)
+                            duration: getDuration(for: date),
+                            intensity: getIntensity(for: date)
                         )
                     } else {
                         Color.clear
@@ -52,7 +53,8 @@ struct CalendarView: View {
         )
         
         let firstWeekday = calendar.component(.weekday, from: interval.start)
-        let prefixDays = Array(repeating: nil as Date?, count: firstWeekday - 1)
+        let adjustedFirstWeekday = firstWeekday == 1 ? 6 : firstWeekday - 2
+        let prefixDays = Array(repeating: nil as Date?, count: adjustedFirstWeekday)
         
         return prefixDays + days.map { Optional($0) }
     }
@@ -68,14 +70,25 @@ struct CalendarView: View {
             calendar.isDate(record.wrappedDate, inSameDayAs: date)
         }.reduce(0) { $0 + Int($1.duration) }
     }
+    
+    // 添加获取强度的方法
+    private func getIntensity(for date: Date) -> Int {
+        let dayRecords = records.filter { record in
+            calendar.isDate(record.wrappedDate, inSameDayAs: date)
+        }
+        // 如果当天有多条记录，返回平均强度
+        let totalIntensity = dayRecords.reduce(0) { $0 + Int($1.intensity) }
+        return dayRecords.isEmpty ? 0 : totalIntensity / dayRecords.count
+    }
 }
 
 struct DayCell: View {
     let date: Date
     let hasRecord: Bool
     let duration: Int
+    let intensity: Int  // 添加强度参数
     
-    // 增加透明度值，使颜色更深
+    // 根据强度返回对应的透明度
     private func getOpacity(for intensity: Int) -> Double {
         let opacities: [Int: Double] = [
             1: 0.3,  // 很轻松
@@ -96,17 +109,10 @@ struct DayCell: View {
         .frame(height: 40)
         .background(
             hasRecord ? 
-                Color.green.opacity(getOpacity(for: getIntensity())) : 
+                Color.themeColor.opacity(getOpacity(for: intensity)) : 
                 Color.clear
         )
         .clipShape(Circle())
-    }
-    
-    // 获取当天记录的强度
-    private func getIntensity() -> Int {
-        // 这里需要根据你的数据模型来获取强度值
-        // 假设记录中有 intensity 属性
-        return 3 // 默认返回中等强度，需要根据实际数据修改
     }
 }
 
