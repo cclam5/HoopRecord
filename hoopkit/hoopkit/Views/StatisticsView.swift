@@ -355,8 +355,13 @@ struct StatisticsView: View {
                     .padding(.bottom, 4)
                     
                     // 周时长分布图
-                    WeeklyDistributionChart(data: weeklyDistribution, records: allRecords)
-                        .frame(height: 200)
+                    if timeRange == .week {
+                        WeeklyDistributionChart(data: weeklyDistribution, records: allRecords)
+                            .frame(height: 200)
+                    } else {
+                        MonthlyDistributionChart(records: filteredRecords, selectedDate: selectedDate)
+                            .frame(height: 200)
+                    }
                 }
                 .padding(.horizontal)
                 
@@ -548,6 +553,137 @@ struct WeeklyDistributionChart: View {
         .chartYScale(domain: 0...maxValue)
         .frame(height: 200)
         .padding(.vertical, 8)
+    }
+}
+
+// 月度分布图组件
+struct MonthlyDistributionChart: View {
+    let records: [BasketballRecord]
+    let selectedDate: Date
+    let calendar = Calendar.current
+    
+    // 获取月度数据
+    private var monthlyData: [(String, Double)] {
+        print("正在生成月度数据...")
+        let daysInMonth = calendar.range(of: .day, in: .month, for: selectedDate)?.count ?? 30
+        var data: [(String, Double)] = []
+        
+        for day in 1...daysInMonth {
+            // 获取该天的日期
+            var components = calendar.dateComponents([.year, .month], from: selectedDate)
+            components.day = day
+            guard let date = calendar.date(from: components) else { continue }
+            
+            // 获取该天的记录
+            let dayRecords = records.filter { record in
+                guard let recordDate = record.date else { return false }
+                return calendar.isDate(recordDate, inSameDayAs: date)
+            }
+            
+            // 计算该天的总时长（小时）
+            let totalHours = Double(dayRecords.reduce(0) { $0 + Int($1.duration) }) / 60.0
+            data.append(("\(day)", totalHours))
+            
+            // 打印每天的记录情况
+            print("第 \(day) 天:")
+            print("- 记录数量: \(dayRecords.count)")
+            if !dayRecords.isEmpty {
+                print("- 强度值: \(dayRecords.map { Int($0.intensity) })")
+                print("- 时长: \(totalHours)小时")
+            }
+        }
+        
+        return data
+    }
+    
+    // 计算最大值
+    private var maxValue: Double {
+        let max = monthlyData.map { $0.1 }.max() ?? 0
+        return ceil(max)
+    }
+    
+    // 获取某天的平均强度
+    private func getAverageIntensity(for day: String) -> Int {
+        print("\n计算第 \(day) 天的平均强度:")
+        
+        guard let dayNumber = Int(day) else {
+            print("- 日期转换失败")
+            return 0
+        }
+        
+        // 修改日期组件的创建方式
+        var components = calendar.dateComponents([.year, .month], from: selectedDate)
+        components.day = dayNumber
+        let date = calendar.date(from: components)
+        
+        guard let date = date else {
+            print("- 日期创建失败")
+            return 0
+        }
+        
+        let dayRecords = records.filter { record in
+            guard let recordDate = record.date else { return false }
+            return calendar.isDate(recordDate, inSameDayAs: date)
+        }
+        
+        let totalIntensity = dayRecords.reduce(0) { $0 + Int($1.intensity) }
+        let averageIntensity = dayRecords.isEmpty ? 0 : totalIntensity / dayRecords.count
+        
+        print("- 找到记录数: \(dayRecords.count)")
+        print("- 总强度: \(totalIntensity)")
+        print("- 平均强度: \(averageIntensity)")
+        print("- 对应透明度: \(Color.getOpacityForIntensity(averageIntensity))")
+        
+        return averageIntensity
+    }
+    
+    var body: some View {
+        let _ = print("\n开始渲染月度图表...")  // 添加视图渲染标记
+        
+        return Chart(monthlyData, id: \.0) { item in
+            let intensity = getAverageIntensity(for: item.0)
+            let opacity = Color.getOpacityForIntensity(intensity)
+            
+            return BarMark(
+                x: .value("日期", Int(item.0) ?? 0),
+                y: .value("时长", item.1),
+                width: .fixed(6)
+            )
+            .foregroundStyle(
+                Color.themeColor.opacity(opacity)
+            )
+            .cornerRadius(4)
+        }
+        .chartXAxis {
+            AxisMarks(values: [1, 5, 10, 15, 20, 25, 30]) { value in
+                AxisGridLine()
+                    .foregroundStyle(Color.secondary.opacity(0.2))
+                AxisValueLabel {
+                    if let day = value.as(Int.self) {
+                        Text("\(day)")
+                            .foregroundStyle(Color.gray)
+                            .font(.caption2)
+                    }
+                }
+            }
+        }
+        .chartXScale(domain: 0...32)
+        .chartYAxis {
+            AxisMarks { value in
+                AxisGridLine()
+                    .foregroundStyle(Color.secondary.opacity(0.2))
+                AxisValueLabel {
+                    let v = value.as(Double.self) ?? 0
+                    Text(String(format: "%.1f", v))
+                        .foregroundStyle(Color.gray)
+                        .font(.caption2)
+                }
+            }
+        }
+        .chartYScale(domain: 0...maxValue)
+        .frame(height: 200)
+        .padding(.vertical, 8)
+        .padding(.horizontal, 16)  // 增加水平内边距
     }
 }
 

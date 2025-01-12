@@ -142,10 +142,10 @@ struct ContentView: View {
     private func monthHeader(_ month: String) -> some View {
         HStack {
             Text(month)
-                .font(.headline)
+                .font(.subheadline)
                 .foregroundColor(.secondary)
                 .padding(.horizontal)
-                .padding(.vertical, 8)
+                .padding(.vertical, 4)
             Spacer()
         }
         .background(Color.white.opacity(0.9))
@@ -179,6 +179,20 @@ struct RecordRow: View {
         return String(format: "%.1f小时", hours)
     }
     
+    // 格式化日期和星期
+    private var formattedDateTime: String {
+        let date = record.wrappedDate
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "M月d日"
+        let weekdayFormatter = DateFormatter()
+        weekdayFormatter.dateFormat = "EEE"  // EEE 会显示简短的周名称
+        weekdayFormatter.locale = Locale(identifier: "zh_CN")  // 使用中文
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "HH:mm"
+        
+        return "\(dateFormatter.string(from: date)) 周\(weekdayFormatter.string(from: date).last!) \(timeFormatter.string(from: date))"
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             // 1. 类型和时间
@@ -187,7 +201,7 @@ struct RecordRow: View {
                     .font(.headline)
                 Spacer()
                 
-                Text(record.wrappedDate.formatted(date: .abbreviated, time: .shortened))
+                Text(formattedDateTime)
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
