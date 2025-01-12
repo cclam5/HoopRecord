@@ -28,10 +28,14 @@ struct ContentView: View {
             .navigationBarHidden(true)
             .background(Color.white)
         }
-        .fullScreenCover(isPresented: $showingNewRecord) {
+        .sheet(isPresented: $showingNewRecord) {
             NewRecordView()
-                .transition(.opacity)
-                .animation(.spring(), value: showingNewRecord)
+                .transition(.move(edge: .bottom))
+                .animation(.spring(
+                    response: 0.3,
+                    dampingFraction: 0.8,
+                    blendDuration: 0
+                ), value: showingNewRecord)
         }
     }
     

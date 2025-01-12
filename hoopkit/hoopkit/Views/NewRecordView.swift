@@ -35,28 +35,21 @@ struct NewRecordView: View {
     }
     
     var body: some View {
-        ZStack(alignment: .bottom) {
-            backgroundView
-            
-            NavigationView {
-                VStack(spacing: 0) {
-                    mainContentView
-                    Spacer()
-                    Divider()
-                    tagInputView
-                }
-                .background(Color(.systemBackground))
-                .navigationTitle("新记录")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    toolbarContent
-                }
+        NavigationView {
+            VStack(spacing: 0) {
+                mainContentView
+                Spacer()
+                Divider()
+                tagInputView
             }
-            .frame(width: 400, height: 600)
             .background(Color(.systemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .navigationTitle("新记录")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                toolbarContent
+            }
         }
-        .ignoresSafeArea()
+        .interactiveDismissDisabled(hasUnsavedContent)
         .alert("放弃编辑", isPresented: $showingDiscardAlert) {
             Button("继续编辑", role: .cancel) { }
             Button("放弃", role: .destructive) { dismiss() }
@@ -66,19 +59,6 @@ struct NewRecordView: View {
     }
     
     // MARK: - 子视图
-    
-    private var backgroundView: some View {
-        Color.black.opacity(0.75)
-            .edgesIgnoringSafeArea(.all)
-            .contentShape(Rectangle())
-            .onTapGesture {
-                if hasUnsavedContent {
-                    showingDiscardAlert = true
-                } else {
-                    dismiss()
-                }
-            }
-    }
     
     private var mainContentView: some View {
         VStack(spacing: 12) {
