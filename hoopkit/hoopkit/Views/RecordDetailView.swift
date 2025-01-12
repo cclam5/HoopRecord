@@ -34,52 +34,52 @@ struct RecordDetailView: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
-                // 时间选择部分
-                VStack(spacing: 12) {
-                    HStack {
-                        Text("时间")
-                            .foregroundColor(.secondary)
-                        
-                        Spacer()
-                        
-                        if isEditing {
-                            DatePicker("", selection: $editedDate)
-                                .labelsHidden()
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                        } else {
-                            Text(record.wrappedDate.formatted(date: .abbreviated, time: .shortened))
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(Color(.systemGray6))
-                                .cornerRadius(8)
+            ScrollView {
+                VStack(spacing: 0) {
+                    // 时间选择部分
+                    VStack(spacing: 12) {
+                        HStack {
+                            Text("时间")
+                                .foregroundColor(.secondary)
+                            
+                            Spacer()
+                            
+                            if isEditing {
+                                DatePicker("", selection: $editedDate)
+                                    .labelsHidden()
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                            } else {
+                                Text(record.wrappedDate.formatted(date: .abbreviated, time: .shortened))
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .background(Color(.systemGray6))
+                                    .cornerRadius(8)
+                            }
                         }
+                        .frame(maxWidth: .infinity)
+                        Divider()
                     }
-                    .frame(maxWidth: .infinity)
-                    Divider()
-                }
-                .padding(.horizontal)
-                .padding(.bottom)
-                
-                // 上部分内容：紧凑布局
-                VStack(spacing: 12) {
-                    typeAndIntensitySection
-                    durationSection
-                    Divider()
-                }
-                .padding()
-                
-                // 心得文本区域（固定在标签栏上方）
-                GeometryReader { geometry in
+                    .padding(.horizontal)
+                    .padding(.bottom)
+                    
+                    // 上部分内容：紧凑布局
+                    VStack(spacing: 12) {
+                        typeAndIntensitySection
+                        durationSection
+                        Divider()
+                    }
+                    .padding()
+                    
+                    // 心得文本区域
                     notesSection
-                        .frame(height: geometry.size.height)
+                        .frame(minHeight: 200) // 设置最小高度
+                    
+                    Divider()
+                    
+                    // 底部标签栏
+                    tagSection
                 }
-                
-                Divider()
-                
-                // 底部标签栏
-                tagSection
             }
             .navigationTitle("记录详情")
             .navigationBarTitleDisplayMode(.inline)
@@ -212,9 +212,9 @@ struct RecordDetailView: View {
     private var notesSection: some View {
         Group {
             if isEditing {
-                ScrollView {
+                VStack {
                     TextEditor(text: $editedNotes)
-                        .frame(minHeight: 100)
+                        .frame(minHeight: 150)
                         .overlay(
                             Group {
                                 if editedNotes.isEmpty {
@@ -232,7 +232,7 @@ struct RecordDetailView: View {
                 }
                 .padding()
             } else {
-                ScrollView {
+                VStack {
                     Text(record.wrappedNotes)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
@@ -356,6 +356,9 @@ struct RecordDetailView: View {
         } catch {
             print("Error saving changes: \(error)")
         }
+        
+        try? viewContext.save()
+        dismiss()
     }
     
     private var toolbarContent: some ToolbarContent {

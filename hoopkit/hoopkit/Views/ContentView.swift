@@ -17,6 +17,7 @@ struct ContentView: View {
     @State private var showingNewRecord = false
     @State private var scrollOffset: CGFloat = 0
     @State private var contentHeight: CGFloat = 0
+    @State private var refreshID = UUID()
     
     // 按月份分组的记录
     var groupedRecords: [String: [BasketballRecord]] {
@@ -69,7 +70,7 @@ struct ContentView: View {
                 
                 // 记录列表和滚动条
                 ZStack {
-                    Color(.systemGroupedBackground)
+                    Color.white
                         .ignoresSafeArea()
                     
                     GeometryReader { geometry in
@@ -79,8 +80,11 @@ struct ContentView: View {
                                     Section(header: monthHeader(month)) {
                                         VStack(spacing: 12) {
                                             ForEach(groupedRecords[month] ?? []) { record in
-                                                RecordRow(record: record)
-                                                    .padding(.horizontal)
+                                                RecordRow(record: record, onUpdate: {
+                                                    refreshID = UUID()
+                                                })
+                                                .id(refreshID)
+                                                .padding(.horizontal)
                                             }
                                         }
                                         .padding(.vertical)
@@ -125,6 +129,7 @@ struct ContentView: View {
 
             }
             .navigationBarHidden(true)
+            .background(Color.white)
         }
         .fullScreenCover(isPresented: $showingNewRecord) {
             NewRecordView()
@@ -141,7 +146,7 @@ struct ContentView: View {
                 .padding(.vertical, 8)
             Spacer()
         }
-        .background(Color(.systemGroupedBackground).opacity(0.9))
+        .background(Color.white.opacity(0.9))
     }
     
     private func deleteRecords(offsets: IndexSet) {
@@ -155,7 +160,9 @@ struct ContentView: View {
 // 记录行视图
 struct RecordRow: View {
     let record: BasketballRecord
+    let onUpdate: () -> Void
     @State private var showingDetail = false
+    @Environment(\.managedObjectContext) private var viewContext
     
     private var durationInHours: String {
         let hours = Double(record.duration) / 60.0
@@ -171,6 +178,7 @@ struct RecordRow: View {
                 Spacer()
                 
                 Text(record.wrappedDate.formatted(date: .abbreviated, time: .shortened))
+                    .font(.caption)
                     .foregroundColor(.secondary)
                 
                 Button(action: { showingDetail = true }) {
@@ -182,11 +190,23 @@ struct RecordRow: View {
             
             // 2. 时长和强度
             HStack(spacing: 12) {
-                Label(durationInHours, systemImage: "clock")
-                    .foregroundColor(.secondary)
-                Label(String(repeating: "🔥", count: Int(record.intensity)),
-                      systemImage: "flame")
-                    .foregroundColor(.secondary)
+                Label {
+                    Text(durationInHours)
+                        .font(.caption)
+                } icon: {
+                    Image(systemName: "clock")
+                        .imageScale(.small)
+                }
+                .foregroundColor(.secondary)
+                
+                Label {
+                    Text(String(repeating: "🔥", count: Int(record.intensity)))
+                        .font(.caption)
+                } icon: {
+                    Image(systemName: "flame")
+                        .imageScale(.small)
+                }
+                .foregroundColor(.secondary)
             }
             
             // 3. 心得（如果有）
@@ -205,9 +225,10 @@ struct RecordRow: View {
                         ForEach(record.tagArray) { tag in
                             Text(tag.wrappedName)
                                 .font(.caption)
+                                .foregroundColor(Color.themeColor)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
-                                .background(Color.blue.opacity(0.1))
+                                .background(Color.themeColor.opacity(0.1))
                                 .cornerRadius(8)
                         }
                     }
@@ -215,10 +236,15 @@ struct RecordRow: View {
             }
         }
         .padding()
-        .background(Color(.systemBackground))
+        .background(Color(red: 0.99, green: 0.99, blue: 0.99))
         .cornerRadius(12)
         .sheet(isPresented: $showingDetail) {
-                RecordDetailView(record: record)
+            RecordDetailView(record: record)
+                .environment(\.managedObjectContext, viewContext)
+                .onDisappear {
+                    try? viewContext.save()
+                    onUpdate()
+                }
         }
     }
 }

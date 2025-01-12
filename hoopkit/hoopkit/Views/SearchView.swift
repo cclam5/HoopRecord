@@ -34,7 +34,7 @@ struct SearchView: View {
                 .padding(.leading, 8)
             }
             .padding()
-            .background(Color(.systemBackground))
+            .background(Color.white)
             
             if searchText.isEmpty {
                 VStack {
@@ -46,12 +46,14 @@ struct SearchView: View {
                         .foregroundColor(.secondary)
                 }
                 .frame(maxHeight: .infinity)
+                .background(Color.white)
             } else {
                 SearchResultList(searchText: searchText)
+                    .background(Color.white)
             }
         }
         .navigationBarHidden(true)
-        .background(Color(.systemGroupedBackground))
+        .background(Color.white)
     }
 }
 
@@ -79,27 +81,31 @@ struct SearchBar: View {
 
 struct SearchResultList: View {
     @FetchRequest var records: FetchedResults<BasketballRecord>
+    @State private var refreshID = UUID()
     
     init(searchText: String) {
         _records = FetchRequest(
             sortDescriptors: [NSSortDescriptor(keyPath: \BasketballRecord.date, ascending: false)],
-            predicate: NSPredicate(format: "notes CONTAINS[cd] %@ OR gameType CONTAINS[cd] %@", 
-                                 searchText, searchText)
+            predicate: NSPredicate(format: 
+                "notes CONTAINS[cd] %@ OR gameType CONTAINS[cd] %@ OR ANY tags.name CONTAINS[cd] %@", 
+                searchText, searchText, searchText)
         )
     }
     
     var body: some View {
         List {
             ForEach(records) { record in
-                NavigationLink(destination: RecordDetailView(record: record)) {
-                    RecordRow(record: record)
-                }
+                RecordRow(record: record, onUpdate: {
+                    refreshID = UUID()
+                })
+                .id(refreshID)
                 .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
+                .listRowBackground(Color.white)
                 .padding(.vertical, 4)
             }
         }
         .listStyle(.plain)
+        .background(Color.white)
         .overlay(Group {
             if records.isEmpty {
                 Text("未找到相关记录")
