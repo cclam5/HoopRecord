@@ -5,7 +5,23 @@ import Charts
 struct StatisticsView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @State private var selectedDate = Date()
+    @State private var timeRange: TimeRange = .week  // 添加时间范围状态
     @Environment(\.dismiss) private var dismiss
+    @State private var showingTimeRangeSheet = false  // 添加状态控制 ActionSheet 显示
+    @State private var showPopover = false  // 控制 popover 显示
+    
+    // 添加时间范围枚举
+    enum TimeRange {
+        case week
+        case month
+        
+        var title: String {
+            switch self {
+            case .week: return "周"
+            case .month: return "月"
+            }
+        }
+    }
     
     var startOfMonth: Date {
         let calendar = Calendar.current
@@ -73,32 +89,64 @@ struct StatisticsView: View {
         let weekDays = ["一", "二", "三", "四", "五", "六", "日"]
         
         let today = Date()
-        guard let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)),
+        // 获取本周一的日期
+        let currentWeekday = calendar.component(.weekday, from: today)
+        let daysToSubtract = (currentWeekday + 5) % 7 // 计算到本周一需要减去的天数
+        
+        guard let weekStart = calendar.date(byAdding: .day, value: -daysToSubtract, to: today),
               let weekEnd = calendar.date(byAdding: .day, value: 6, to: weekStart) else {
+            print("获取周日期范围失败")
             return weekDays.map { ($0, 0.0) }
         }
         
-        print("本周日期范围：\(weekStart) 至 \(weekEnd)")
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        print("本周日期范围：\(dateFormatter.string(from: weekStart)) 至 \(dateFormatter.string(from: weekEnd))")
         
         var distribution = Dictionary(uniqueKeysWithValues: weekDays.map { ($0, 0.0) })
         
+        // 过滤本周的记录
         let weeklyRecords = allRecords.filter { record in
-            guard let date = record.date else { return false }
-            return date >= weekStart && date <= weekEnd
+            guard let date = record.date else {
+                print("记录日期为空")
+                return false
+            }
+            
+            // 使用日期比较来确保包含整天
+            let startOfDay = calendar.startOfDay(for: weekStart)
+            let endOfDay = calendar.date(bySettingHour: 23, minute: 59, second: 59, of: weekEnd) ?? weekEnd
+            let isInRange = date >= startOfDay && date <= endOfDay
+            
+            // 添加调试信息
+            print("检查记录 - 日期: \(dateFormatter.string(from: date)), 是否在范围内: \(isInRange)")
+            return isInRange
         }
         
-        print("本周记录数：\(weeklyRecords.count)")
+        print("本周符合条件的记录数：\(weeklyRecords.count)")
         
+        // 计算每天的时长
         for record in weeklyRecords {
             if let date = record.date {
-                var weekday = calendar.component(.weekday, from: date) - 1
-                weekday = weekday == 0 ? 6 : weekday - 1
-                let dayName = weekDays[weekday]
-                distribution[dayName]? += Double(record.duration) / 60.0
+                // 获取星期几
+                let weekday = calendar.component(.weekday, from: date)
+                // 转换为数组索引 (0 = 周一，6 = 周日)
+                let index = (weekday + 5) % 7
+                let dayName = weekDays[index]
+                
+                let hours = Double(record.duration) / 60.0
+                distribution[dayName]? += hours
+                
+                // 添加调试信息
+                print("处理记录 - 日期: \(dateFormatter.string(from: date))")
+                print("星期几: \(weekday), 转换后索引: \(index), 对应天数: \(dayName)")
+                print("时长: \(hours)小时")
             }
         }
         
-        return weekDays.map { ($0, distribution[$0] ?? 0.0) }
+        let result = weekDays.map { ($0, distribution[$0] ?? 0.0) }
+        print("最终数据分布：\(result)")
+        
+        return result
     }
     
     // 计算本周平均时长
@@ -200,46 +248,80 @@ struct StatisticsView: View {
                 
                 // 统计卡片
                 VStack(alignment: .leading, spacing: 8) {
-                    // 月统计信息
-                    HStack(spacing: 8) {
-                        Text("本月打球")
-                            .foregroundColor(.secondary)
-                            .font(.subheadline)
-                        
-                        // Text("\(filteredRecords.count)次")
-                        //     .foregroundColor(.secondary)
-                        //     .font(.subheadline)
-                        
-                        Text("\(String(format: "%.1f", totalHours))小时")
-                            .foregroundColor(.themeColor)
-                            .font(.system(size: 25, weight: .semibold))
-                    }
-                    
-                    // 周环比信息
-                    HStack(spacing: 8) {
-                        Text("日均")
-                            .foregroundColor(.secondary)
-                        Text(String(format: "%.1f", currentWeekAverage))
-                            .foregroundColor(.secondary)
-                            .fontWeight(.medium)
-                        Text("小时")
-                            .foregroundColor(.secondary)
-                        
-                        if weekOverWeekChange != 0 {
-                            Text("比上周")
-                                .foregroundColor(.secondary)
-                            HStack(spacing: 2) {
-                                Image(systemName: weekOverWeekChange > 0 ? "arrow.up" : "arrow.down")
-                                Text(String(format: "%.0f%%", abs(weekOverWeekChange)))
+                    HStack {
+                        // 左侧统计信息
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 8) {
+                                Text(timeRange == .week ? "本周打球" : "本月打球")
+                                    .foregroundColor(.secondary)
+                                    .font(.subheadline)
+                                
+                                Text("\(String(format: "%.1f", totalHours))小时")
+                                    .foregroundColor(.themeColor)
+                                    .font(.system(size: 25, weight: .semibold))
                             }
-                            .foregroundColor(.secondary)
+                            
+                            HStack(spacing: 8) {
+                                Text("日均")
+                                    .foregroundColor(.secondary)
+                                Text(String(format: "%.1f", currentWeekAverage))
+                                    .foregroundColor(.secondary)
+                                    .fontWeight(.medium)
+                                Text("小时")
+                                    .foregroundColor(.secondary)
+                            }
+                            .font(.subheadline)
+                        }
+                        
+                        Spacer()
+                        
+                        // 调整宽度的胶囊样式下拉列表
+                        Button {
+                            showPopover.toggle()
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text(timeRange.title)
+                                    .font(.subheadline)
+                                Image(systemName: "chevron.down")
+                                    .font(.system(size: 12))
+                            }
+                            .foregroundColor(.primary)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color(.systemGray6))
+                            .clipShape(Capsule())
+                            .frame(width: 65, height: 28)
+                        }
+                        .popover(isPresented: $showPopover, arrowEdge: .top) {
+                            VStack(spacing: 0) {
+                                ForEach([TimeRange.week, TimeRange.month], id: \.self) { range in
+                                    Button {
+                                        withAnimation {
+                                            timeRange = range
+                                            showPopover = false
+                                        }
+                                    } label: {
+                                        Text(range.title)
+                                            .font(.subheadline)
+                                            .foregroundColor(.primary)
+                                            .frame(width: 65, height: 36)
+                                    }
+                                    
+                                    if range == .week {
+                                        Divider()
+                                    }
+                                }
+                            }
+                            .padding(.vertical, 4)
+                            .background(Color(.systemBackground))
+                            .frame(width: 65)
+                            .presentationCompactAdaptation(.popover)
                         }
                     }
-                    .font(.subheadline)
                     .padding(.bottom, 4)
                     
                     // 周时长分布图
-                    WeeklyDistributionChart(data: weeklyDistribution)
+                    WeeklyDistributionChart(data: weeklyDistribution, records: allRecords)
                         .frame(height: 200)
                 }
                 .padding(.horizontal)
@@ -291,6 +373,21 @@ struct StatisticsView: View {
         .toolbarBackground(.hidden, for: .navigationBar)
         .navigationBarBackButtonHidden(true)
         .background(Color.white)
+        .confirmationDialog("选择时间范围", isPresented: $showingTimeRangeSheet, titleVisibility: .hidden) {
+            Button("周") {
+                withAnimation {
+                    timeRange = .week
+                }
+            }
+            
+            Button("月") {
+                withAnimation {
+                    timeRange = .month
+                }
+            }
+            
+            Button("取消", role: .cancel) { }
+        }
     }
     
     private var totalDuration: Int {
@@ -323,22 +420,51 @@ struct StatisticsView: View {
 // 修改统计图表组件
 struct WeeklyDistributionChart: View {
     let data: [(String, Double)]
+    let records: [BasketballRecord]
+    let calendar = Calendar.current
     
-    var maxValue: Double {
+    // 添加最大值计算
+    private var maxValue: Double {
         let max = data.map { $0.1 }.max() ?? 0
-        return ceil(max)
+        return ceil(max) // 直接对最大时长向上取整
+    }
+    
+    // 获取某天的平均强度，使用与日历视图相同的逻辑
+    private func getAverageIntensity(for dayName: String) -> Int {
+        let weekDays = ["一", "二", "三", "四", "五", "六", "日"]
+        guard let dayIndex = weekDays.firstIndex(of: dayName) else { return 0 }
+        
+        let today = Date()
+        let currentWeekday = calendar.component(.weekday, from: today)
+        let daysToSubtract = (currentWeekday + 5) % 7
+        
+        guard let weekStart = calendar.date(byAdding: .day, value: -daysToSubtract, to: today),
+              let targetDate = calendar.date(byAdding: .day, value: dayIndex, to: weekStart) else {
+            return 0
+        }
+        
+        let dayRecords = records.filter { record in
+            guard let date = record.date else { return false }
+            return calendar.isDate(date, inSameDayAs: targetDate)
+        }
+        
+        let totalIntensity = dayRecords.reduce(0) { $0 + Int($1.intensity) }
+        return dayRecords.isEmpty ? 0 : totalIntensity / dayRecords.count
     }
     
     var body: some View {
         Chart(data, id: \.0) { item in
             BarMark(
-                x: .value("星期", item.0),
+                x: .value("日期", item.0),
                 y: .value("时长", item.1),
                 width: .fixed(16)
             )
-            .foregroundStyle(Color.themeColor.opacity(0.8))
+            .foregroundStyle(
+                Color.themeColor.opacity(
+                    Color.getOpacityForIntensity(getAverageIntensity(for: item.0))
+                )
+            )
             .cornerRadius(4)
-            .clipShape(RoundedRectangle(cornerRadius: 4))
         }
         .chartXAxis {
             AxisMarks { _ in

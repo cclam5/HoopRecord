@@ -86,19 +86,7 @@ struct DayCell: View {
     let date: Date
     let hasRecord: Bool
     let duration: Int
-    let intensity: Int  // 添加强度参数
-    
-    // 根据强度返回对应的透明度
-    private func getOpacity(for intensity: Int) -> Double {
-        let opacities: [Int: Double] = [
-            1: 0.3,  // 很轻松
-            2: 0.45, // 轻松
-            3: 0.6,  // 适中
-            4: 0.75, // 疲劳
-            5: 0.9   // 非常疲劳
-        ]
-        return opacities[intensity] ?? 0.3
-    }
+    let intensity: Int
     
     var body: some View {
         VStack(spacing: 2) {
@@ -109,7 +97,7 @@ struct DayCell: View {
         .frame(height: 40)
         .background(
             hasRecord ? 
-                Color.themeColor.opacity(getOpacity(for: intensity)) : 
+                Color.themeColor.opacity(Color.getOpacityForIntensity(intensity)) : 
                 Color.clear
         )
         .clipShape(Circle())
