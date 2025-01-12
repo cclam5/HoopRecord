@@ -22,6 +22,8 @@ struct RecordDetailView: View {
     
     @State private var suggestedTags: [BasketballTag] = []  // 添加建议标签数组
     
+    @State private var showingDiscardAlert = false
+    
     init(record: BasketballRecord) {
         self.record = record
         _editedGameType = State(initialValue: record.gameType ?? "")
@@ -30,6 +32,18 @@ struct RecordDetailView: View {
         _editedNotes = State(initialValue: record.notes ?? "")
         _selectedTags = State(initialValue: Set(record.tagArray))
         _editedDate = State(initialValue: record.date ?? Date())  // 初始化时间
+    }
+    
+    private var hasUnsavedChanges: Bool {
+        if isEditing {
+            return editedGameType != record.gameType ||
+                   editedDuration != Double(record.duration) ||
+                   editedIntensity != Int(record.intensity) ||
+                   editedNotes != (record.notes ?? "") ||
+                   editedDate != (record.date ?? Date()) ||
+                   selectedTags != Set(record.tagArray)
+        }
+        return false
     }
     
     var body: some View {
@@ -84,7 +98,58 @@ struct RecordDetailView: View {
             .navigationTitle("记录详情")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                toolbarContent
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(isEditing ? "取消" : "返回") {
+                        if isEditing && hasUnsavedChanges {
+                            showingDiscardAlert = true
+                        } else {
+                            if isEditing {
+                                isEditing = false
+                            } else {
+                                dismiss()
+                            }
+                        }
+                    }
+                    .foregroundColor(.themeColor)
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(isEditing ? "保存" : "编辑") {
+                        if isEditing {
+                            saveChanges()
+                        }
+                        isEditing.toggle()
+                    }
+                    .foregroundColor(.themeColor)
+                }
+            }
+            .alert("放弃更改", isPresented: $showingDiscardAlert) {
+                Button("继续编辑", role: .cancel) { }
+                Button("放弃", role: .destructive) {
+                    isEditing = false
+                    // 重置所有编辑状态
+                    editedGameType = record.gameType ?? ""
+                    editedDuration = Double(record.duration)
+                    editedIntensity = Int(record.intensity)
+                    editedNotes = record.notes ?? ""
+                    editedDate = record.date ?? Date()
+                    selectedTags = Set(record.tagArray)
+                }
+            } message: {
+                Text("当前更改尚未保存，确定要放弃吗？")
+            }
+        }
+        .interactiveDismissDisabled(isEditing && hasUnsavedChanges)  // 禁用下滑关闭手势
+    }
+    
+    private func handleDismiss() {
+        if isEditing && hasUnsavedChanges {
+            showingDiscardAlert = true
+        } else {
+            if isEditing {
+                isEditing = false
+            } else {
+                dismiss()
             }
         }
     }

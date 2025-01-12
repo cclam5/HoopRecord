@@ -19,124 +19,122 @@ struct ContentView: View {
     @State private var contentHeight: CGFloat = 0
     @State private var refreshID = UUID()
     
-    // 按月份分组的记录
-    var groupedRecords: [String: [BasketballRecord]] {
-        Dictionary(grouping: records) { record in
-            let date = record.wrappedDate
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy年M月"
-            return formatter.string(from: date)
-        }
-    }
-    
-    // 排序后的月份键
-    var sortedMonths: [String] {
-        groupedRecords.keys.sorted(by: >)
-    }
-
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // 工具栏背景
-                HStack {
-                    NavigationLink(destination: StatisticsView()
-                        .navigationBarBackButtonHidden(true)
-                    ) {
-                        Image(systemName: "chart.bar.fill")
-                            .foregroundColor(.themeColor)
-                            .imageScale(.large)
-                    }
-                    
-                    Spacer()
-                    
-                    // 中间的篮球图标
-                    Image(systemName: "basketball")
-                        .foregroundColor(.themeColor)
-                        .imageScale(.large)
-                    
-                    Spacer()
-                    
-                    NavigationLink(destination: SearchView()
-                        .navigationBarBackButtonHidden(true)
-                    ) {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.themeColor)
-                            .imageScale(.large)
-                    }
-                }
-                .padding()
-                .background(Color(.systemBackground))
-                .shadow(color: Color.black.opacity(0.05), radius: 1, y: 1)
-                
-                // 记录列表和滚动条
-                ZStack {
-                    Color.white
-                        .ignoresSafeArea()
-                    
-                    GeometryReader { geometry in
-                        ScrollView {
-                            LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
-                                ForEach(sortedMonths, id: \.self) { month in
-                                    Section(header: monthHeader(month)) {
-                                        VStack(spacing: 12) {
-                                            ForEach(groupedRecords[month] ?? []) { record in
-                                                RecordRow(record: record, onUpdate: {
-                                                    refreshID = UUID()
-                                                })
-                                                .id(refreshID)
-                                                .padding(.horizontal)
-                                            }
-                                        }
-                                        .padding(.vertical)
-                                    }
-                                }
-                            }
-                            .background(GeometryReader { contentGeometry in
-                                Color.clear.preference(key: ContentHeightKey.self,
-                                                     value: contentGeometry.size.height)
-                            })
-                        }
-                        .coordinateSpace(name: "scroll")
-                        .onPreferenceChange(ContentHeightKey.self) { height in
-                            contentHeight = height
-                        }
-                        .overlay(
-                            ScrollIndicator(
-                                contentHeight: contentHeight,
-                                viewportHeight: geometry.size.height,
-                                scrollOffset: scrollOffset
-                            )
-                            .padding(.trailing, 2),
-                            alignment: .trailing
-                        )
-                    }
-                    
-                    // 底部添加按钮
-                    VStack {
-                        Spacer()
-                        Button(action: { showingNewRecord = true }) {
-                            Image(systemName: "plus")
-                                .font(.system(size: 24, weight: .semibold))
-                                .foregroundColor(.white)
-                                .frame(width: 60, height: 60)
-                                .background(Color.themeColor)
-                                .clipShape(Circle())
-                                .shadow(radius: 3)
-                        }
-                        .padding(.bottom, 16)
-                    }
-                }
-
+                toolbarView
+                mainContentView
             }
             .navigationBarHidden(true)
             .background(Color.white)
         }
         .fullScreenCover(isPresented: $showingNewRecord) {
             NewRecordView()
+                .transition(.opacity)
+                .animation(.spring(), value: showingNewRecord)
         }
     }
     
-    // 月份标题视图
+    // MARK: - 子视图
+    
+    private var toolbarView: some View {
+        HStack {
+            NavigationLink(destination: StatisticsView().navigationBarBackButtonHidden(true)) {
+                Image(systemName: "chart.bar.fill")
+                    .foregroundColor(.themeColor)
+                    .imageScale(.large)
+            }
+            
+            Spacer()
+            
+            Image(systemName: "basketball")
+                .foregroundColor(.themeColor)
+                .imageScale(.large)
+            
+            Spacer()
+            
+            NavigationLink(destination: SearchView().navigationBarBackButtonHidden(true)) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.themeColor)
+                    .imageScale(.large)
+            }
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        .shadow(color: Color.black.opacity(0.05), radius: 1, y: 1)
+    }
+    
+    private var mainContentView: some View {
+        ZStack {
+            Color.white.ignoresSafeArea()
+            
+            GeometryReader { geometry in
+                recordListView(geometry: geometry)
+                
+                addButton
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .position(
+                        x: geometry.size.width / 2,
+                        y: geometry.size.height - 50  // 调整这个值来上下移动按钮
+                    )
+            }
+        }
+    }
+    
+    private func recordListView(geometry: GeometryProxy) -> some View {
+        ScrollView {
+            LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
+                ForEach(sortedMonths, id: \.self) { month in
+                    Section(header: monthHeader(month)) {
+                        monthRecordsView(month: month)
+                    }
+                }
+            }
+            .background(GeometryReader { contentGeometry in
+                Color.clear.preference(key: ContentHeightKey.self,
+                                    value: contentGeometry.size.height)
+            })
+        }
+        .coordinateSpace(name: "scroll")
+        .onPreferenceChange(ContentHeightKey.self) { height in
+            contentHeight = height
+        }
+        .overlay(
+            ScrollIndicator(
+                contentHeight: contentHeight,
+                viewportHeight: geometry.size.height,
+                scrollOffset: scrollOffset
+            )
+            .padding(.trailing, 2),
+            alignment: .trailing
+        )
+    }
+    
+    private var addButton: some View {
+        Button(action: { showingNewRecord = true }) {
+            Image(systemName: "plus")
+                .font(.system(size: 24, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(width: 60, height: 60)
+                .background(Color.themeColor)
+                .clipShape(Circle())
+                .shadow(radius: 3)
+        }
+    }
+    
+    private func monthRecordsView(month: String) -> some View {
+        VStack(spacing: 12) {
+            ForEach(groupedRecords[month] ?? []) { record in
+                RecordRow(record: record, onUpdate: {
+                    refreshID = UUID()
+                })
+                .id(refreshID)
+                .padding(.horizontal)
+            }
+        }
+        .padding(.vertical)
+    }
+    
     private func monthHeader(_ month: String) -> some View {
         HStack {
             Text(month)
@@ -149,11 +147,19 @@ struct ContentView: View {
         .background(Color.white.opacity(0.9))
     }
     
-    private func deleteRecords(offsets: IndexSet) {
-        withAnimation {
-            offsets.map { records[$0] }.forEach(viewContext.delete)
-            try? viewContext.save()
+    // MARK: - 辅助方法
+    
+    private var groupedRecords: [String: [BasketballRecord]] {
+        Dictionary(grouping: records) { record in
+            let date = record.wrappedDate
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy年M月"
+            return formatter.string(from: date)
         }
+    }
+    
+    private var sortedMonths: [String] {
+        groupedRecords.keys.sorted(by: >)
     }
 }
 
