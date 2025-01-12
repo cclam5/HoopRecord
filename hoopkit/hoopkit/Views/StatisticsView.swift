@@ -149,13 +149,6 @@ struct StatisticsView: View {
         return result
     }
     
-    // 计算本周平均时长
-    private var currentWeekAverage: Double {
-        let total = weeklyDistribution.reduce(0.0) { $0 + $1.1 }
-        let days = weeklyDistribution.filter { $0.1 > 0 }.count
-        return days > 0 ? total / Double(days) : 0
-    }
-    
     // 计算上周的数据分布
     private var lastWeekDistribution: [(String, Double)] {
         let calendar = Calendar.current
@@ -214,6 +207,33 @@ struct StatisticsView: View {
         return ((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100
     }
     
+    // 月环比变化率
+    private var monthOverMonthChange: Double {
+        // 获取上个月的记录
+        let calendar = Calendar.current
+        guard let lastMonthDate = calendar.date(byAdding: .month, value: -1, to: selectedDate) else { return 0 }
+        
+        // 获取上个月的起始和结束日期
+        let lastMonthStart = calendar.startOfMonth(for: lastMonthDate)
+        let lastMonthEnd = calendar.endOfMonth(for: lastMonthDate)
+        
+        // 过滤上个月的记录
+        let lastMonthRecords = allRecords.filter { record in
+            guard let date = record.date else { return false }
+            return date >= lastMonthStart && date <= lastMonthEnd
+        }
+        
+        // 计算上个月的总时长（小时）
+        let lastMonthTotal = Double(lastMonthRecords.reduce(0) { $0 + Int($1.duration) }) / 60.0
+        
+        // 避免除以零，并处理特殊情况
+        if lastMonthTotal == 0 {
+            return monthlyTotalHours > 0 ? 100.0 : 0.0
+        }
+        
+        return ((monthlyTotalHours - lastMonthTotal) / lastMonthTotal) * 100.0
+    }
+    
     private let intensityLegends = [
         (level: 1, opacity: 0.3),
         (level: 2, opacity: 0.45),
@@ -256,7 +276,7 @@ struct StatisticsView: View {
                                     .foregroundColor(.secondary)
                                     .font(.subheadline)
                                 
-                                Text("\(String(format: "%.1f", totalHours))小时")
+                                Text("\(String(format: "%.1f", timeRange == .week ? totalWeeklyHours : monthlyTotalHours))小时")
                                     .foregroundColor(.themeColor)
                                     .font(.system(size: 25, weight: .semibold))
                             }
@@ -264,11 +284,25 @@ struct StatisticsView: View {
                             HStack(spacing: 8) {
                                 Text("日均")
                                     .foregroundColor(.secondary)
-                                Text(String(format: "%.1f", currentWeekAverage))
+                                Text(String(format: "%.1f", timeRange == .week ? currentWeekAverage : monthlyAverageHours))
                                     .foregroundColor(.secondary)
                                     .fontWeight(.medium)
                                 Text("小时")
                                     .foregroundColor(.secondary)
+                                
+                                // 环比数据
+                                HStack(spacing: 4) {
+                                    Text(timeRange == .week ? "比上周" : "比上月")
+                                        .foregroundColor(.secondary)
+                                    Image(systemName: 
+                                        (timeRange == .week ? weekOverWeekChange : monthOverMonthChange) >= 0 ? 
+                                        "arrow.up" : "arrow.down"
+                                    )
+                                    .foregroundColor(.secondary)
+                                    Text("\(abs(Int(timeRange == .week ? weekOverWeekChange : monthOverMonthChange)))%")
+                                        .foregroundColor(.secondary)
+                                        .fontWeight(.medium)
+                                }
                             }
                             .font(.subheadline)
                         }
@@ -414,6 +448,30 @@ struct StatisticsView: View {
                 print("切换到下个月: \(monthString)")
             }
         }
+    }
+    
+    // 本周总时长（小时）
+    private var totalWeeklyHours: Double {
+        weeklyDistribution.reduce(0.0) { $0 + $1.1 }
+    }
+    
+    // 本月总时长（小时）
+    private var monthlyTotalHours: Double {
+        Double(filteredRecords.reduce(0) { $0 + Int($1.duration) }) / 60.0
+    }
+    
+    // 本月日均时长（小时）
+    private var monthlyAverageHours: Double {
+        let daysWithRecords = Set(filteredRecords.compactMap { 
+            Calendar.current.startOfDay(for: $0.wrappedDate)
+        }).count
+        return daysWithRecords > 0 ? monthlyTotalHours / Double(daysWithRecords) : 0
+    }
+    
+    // 本周日均时长（小时）
+    private var currentWeekAverage: Double {
+        let daysWithRecords = weeklyDistribution.filter { $0.1 > 0 }.count
+        return daysWithRecords > 0 ? totalWeeklyHours / Double(daysWithRecords) : 0
     }
 }
 
