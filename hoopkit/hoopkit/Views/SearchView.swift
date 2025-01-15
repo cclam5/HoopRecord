@@ -8,30 +8,38 @@ struct SearchView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
+            HStack(spacing: 12) {
+                // 返回按钮
+                Button(action: { dismiss() }) {
+                    Image(systemName: "chevron.left")
+                        .foregroundColor(.themeColor)
+                        .imageScale(.large)
+                }
+
+                // 搜索框
                 HStack {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.secondary)
+                        .font(.system(size: 14))
                     
-                    TextField("搜索记录", text: $searchText)
+                    TextField("搜索", text: $searchText)
                         .textFieldStyle(PlainTextFieldStyle())
+                        .font(.system(size: 14))
                     
                     if !searchText.isEmpty {
                         Button(action: { searchText = "" }) {
                             Image(systemName: "xmark.circle.fill")
                                 .foregroundColor(.secondary)
+                                .font(.system(size: 14))
+
                         }
                     }
                 }
-                .padding(8)
-                .background(Color(.systemGray6))
-                .cornerRadius(8)
-                
-                Button(action: { dismiss() }) {
-                    Text("取消")
-                        .foregroundColor(.themeColor)
-                }
-                .padding(.leading, 8)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 10)
+                .background(Color(.systemGray5))
+                .cornerRadius(14)
+                .frame(height: 34)
             }
             .padding()
             .background(Color.white)

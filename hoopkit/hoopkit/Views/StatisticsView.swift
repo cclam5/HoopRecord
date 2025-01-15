@@ -250,18 +250,18 @@ struct StatisticsView: View {
                     Button(action: previousMonth) {
                         Image(systemName: "chevron.left")
                             .foregroundColor(.secondary)
-                            .imageScale(.large)
+                            .imageScale(.small)
                     }
                     
                     Text(monthString)
-                        .font(.system(.title2, design: .rounded))
+                        .font(.system(.title3, design: .rounded))
                         .fontWeight(.medium)
                         .frame(minWidth: 120)
                     
                     Button(action: nextMonth) {
                         Image(systemName: "chevron.right")
                             .foregroundColor(.secondary)
-                            .imageScale(.large)
+                            .imageScale(.small)
                     }
                 }
                 .padding(.vertical, 10)
@@ -485,6 +485,7 @@ struct WeeklyDistributionChart: View {
     let data: [(String, Double)]
     let records: [BasketballRecord]
     let calendar = Calendar.current
+    @State private var selectedDay: String? // 选中的星期
     
     // 添加最大值计算
     private var maxValue: Double {
@@ -515,6 +516,26 @@ struct WeeklyDistributionChart: View {
         return dayRecords.isEmpty ? 0 : totalIntensity / dayRecords.count
     }
     
+    // 获取某天的所有记录
+    private func getDayRecords(for dayName: String) -> [BasketballRecord] {
+        let weekDays = ["一", "二", "三", "四", "五", "六", "日"]
+        guard let dayIndex = weekDays.firstIndex(of: dayName) else { return [] }
+        
+        let today = Date()
+        let currentWeekday = calendar.component(.weekday, from: today)
+        let daysToSubtract = (currentWeekday + 5) % 7
+        
+        guard let weekStart = calendar.date(byAdding: .day, value: -daysToSubtract, to: today),
+              let targetDate = calendar.date(byAdding: .day, value: dayIndex, to: weekStart) else {
+            return []
+        }
+        
+        return records.filter { record in
+            guard let date = record.date else { return false }
+            return calendar.isDate(date, inSameDayAs: targetDate)
+        }
+    }
+    
     var body: some View {
         Chart(data, id: \.0) { item in
             BarMark(
@@ -528,6 +549,38 @@ struct WeeklyDistributionChart: View {
                 )
             )
             .cornerRadius(4)
+            .opacity(selectedDay == nil || 
+                    selectedDay == item.0 || 
+                    (selectedDay != nil && getDayRecords(for: selectedDay!).isEmpty) ? 1 : 0.3)
+        }
+        .chartOverlay { proxy in
+            GeometryReader { geometry in
+                Rectangle()
+                    .fill(.clear)
+                    .contentShape(Rectangle())
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onEnded { value in
+                                let x = value.location.x
+                                guard let day = proxy.value(atX: x, as: String.self) else {
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        selectedDay = nil
+                                    }
+                                    return
+                                }
+                                
+                                // 只有当点击的日期有记录时才更新选中状态
+                                let dayRecords = getDayRecords(for: day)
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    if selectedDay == day || dayRecords.isEmpty {
+                                        selectedDay = nil
+                                    } else {
+                                        selectedDay = day
+                                    }
+                                }
+                            }
+                    )
+            }
         }
         .chartXAxis {
             AxisMarks { _ in
@@ -550,9 +603,76 @@ struct WeeklyDistributionChart: View {
                 }
             }
         }
+        .overlay {
+            if let selectedDay = selectedDay {
+                let dayRecords = getDayRecords(for: selectedDay)
+                if !dayRecords.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(formatDate(for: selectedDay))
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        
+                        ForEach(dayRecords) { record in
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(record.wrappedGameType)
+                                    .font(.subheadline)
+                                    .foregroundColor(.primary)
+                                
+                                HStack(spacing: 12) {
+                                    Label {
+                                        Text(String(format: "%.1f小时", Double(record.duration) / 60.0))
+                                    } icon: {
+                                        Image(systemName: "clock")
+                                    }
+                                    
+                                    Label {
+                                        Text(String(repeating: "🔥", count: Int(record.intensity)))
+                                    } icon: {
+                                        Image(systemName: "flame")
+                                    }
+                                }
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            }
+                            .padding(.vertical, 4)
+                            
+                            if record.id != dayRecords.last?.id {
+                                Divider()
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.white)
+                            .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+                    )
+                    .padding()
+                    .transition(.scale.combined(with: .opacity))
+                }
+            }
+        }
         .chartYScale(domain: 0...maxValue)
         .frame(height: 200)
         .padding(.vertical, 8)
+    }
+    
+    private func formatDate(for weekday: String) -> String {
+        let weekDays = ["一", "二", "三", "四", "五", "六", "日"]
+        guard let dayIndex = weekDays.firstIndex(of: weekday) else { return "" }
+        
+        let today = Date()
+        let currentWeekday = calendar.component(.weekday, from: today)
+        let daysToSubtract = (currentWeekday + 5) % 7
+        
+        guard let weekStart = calendar.date(byAdding: .day, value: -daysToSubtract, to: today),
+              let targetDate = calendar.date(byAdding: .day, value: dayIndex, to: weekStart) else {
+            return ""
+        }
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy年M月d日"
+        return formatter.string(from: targetDate)
     }
 }
 
@@ -561,6 +681,8 @@ struct MonthlyDistributionChart: View {
     let records: [BasketballRecord]
     let selectedDate: Date
     let calendar = Calendar.current
+    @State private var selectedBar: Int? // 选中的柱子
+    @State private var showingPopover = false // 控制弹出框显示
     
     // 获取月度数据
     private var monthlyData: [(String, Double)] {
@@ -637,25 +759,67 @@ struct MonthlyDistributionChart: View {
         return averageIntensity
     }
     
-    var body: some View {
-        let _ = print("\n开始渲染月度图表...")  // 添加视图渲染标记
+    // 获取某天的所有记录
+    private func getDayRecords(for day: String) -> [BasketballRecord] {
+        guard let dayNumber = Int(day) else { return [] }
+        var components = calendar.dateComponents([.year, .month], from: selectedDate)
+        components.day = dayNumber
+        guard let date = calendar.date(from: components) else { return [] }
         
-        return Chart(monthlyData, id: \.0) { item in
+        return records.filter { record in
+            guard let recordDate = record.date else { return false }
+            return calendar.isDate(recordDate, inSameDayAs: date)
+        }
+    }
+    
+    var body: some View {
+        Chart(monthlyData, id: \.0) { item in
             let intensity = getAverageIntensity(for: item.0)
             let opacity = Color.getOpacityForIntensity(intensity)
+            let day = Int(item.0) ?? 0
             
-            return BarMark(
-                x: .value("日期", Int(item.0) ?? 0),
+            BarMark(
+                x: .value("日期", day),
                 y: .value("时长", item.1),
                 width: .fixed(6)
             )
-            .foregroundStyle(
-                Color.themeColor.opacity(opacity)
-            )
+            .foregroundStyle(Color.themeColor.opacity(opacity))
             .cornerRadius(4)
+            .opacity(selectedBar == nil || 
+                    selectedBar == day || 
+                    (selectedBar != nil && getDayRecords(for: String(selectedBar!)).isEmpty) ? 1 : 0.3)
+        }
+        .chartOverlay { proxy in
+            GeometryReader { geometry in
+                Rectangle()
+                    .fill(.clear)
+                    .contentShape(Rectangle())
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onEnded { value in
+                                let x = value.location.x
+                                guard let day = proxy.value(atX: x, as: Int.self) else {
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        selectedBar = nil
+                                    }
+                                    return
+                                }
+                                
+                                // 只有当点击的日期有记录时才更新选中状态
+                                let dayRecords = getDayRecords(for: String(day))
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    if selectedBar == day || dayRecords.isEmpty {
+                                        selectedBar = nil
+                                    } else {
+                                        selectedBar = day
+                                    }
+                                }
+                            }
+                    )
+            }
         }
         .chartXAxis {
-            AxisMarks(values: [1, 5, 10, 15, 20, 25, 30]) { value in
+            AxisMarks(preset: .aligned, values: [1, 5, 10, 15, 20, 25, 30]) { value in
                 AxisGridLine()
                     .foregroundStyle(Color.secondary.opacity(0.2))
                 AxisValueLabel {
@@ -683,7 +847,67 @@ struct MonthlyDistributionChart: View {
         .chartYScale(domain: 0...maxValue)
         .frame(height: 200)
         .padding(.vertical, 8)
-        .padding(.horizontal, 16)  // 增加水平内边距
+        .padding(.horizontal, 16)
+        .overlay {
+            if let selectedBar = selectedBar,
+               let dayString = String(selectedBar) as String? {
+                let dayRecords = getDayRecords(for: dayString)
+                if !dayRecords.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(formatDate(day: selectedBar))
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        
+                        ForEach(dayRecords) { record in
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(record.wrappedGameType)
+                                    .font(.subheadline)
+                                    .foregroundColor(.primary)
+                                
+                                HStack(spacing: 12) {
+                                    Label {
+                                        Text(String(format: "%.1f小时", Double(record.duration) / 60.0))
+                                    } icon: {
+                                        Image(systemName: "clock")
+                                    }
+                                    
+                                    Label {
+                                        Text(String(repeating: "🔥", count: Int(record.intensity)))
+                                    } icon: {
+                                        Image(systemName: "flame")
+                                    }
+                                }
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            }
+                            .padding(.vertical, 4)
+                            
+                            if record.id != dayRecords.last?.id {
+                                Divider()
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.white)
+                            .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+                    )
+                    .padding()
+                    .transition(.scale.combined(with: .opacity))
+                }
+            }
+        }
+    }
+    
+    private func formatDate(day: Int) -> String {
+        var components = calendar.dateComponents([.year, .month], from: selectedDate)
+        components.day = day
+        guard let date = calendar.date(from: components) else { return "" }
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy年M月d日"
+        return formatter.string(from: date)
     }
 }
 

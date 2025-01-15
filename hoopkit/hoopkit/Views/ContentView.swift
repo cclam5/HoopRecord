@@ -51,9 +51,10 @@ struct ContentView: View {
             
             Spacer()
             
-            Image(systemName: "basketball")
+            Image("ballIcon")
                 .foregroundColor(.themeColor)
                 .imageScale(.large)
+                .rotationEffect(.degrees(90))
             
             Spacer()
             
