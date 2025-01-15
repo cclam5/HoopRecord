@@ -89,18 +89,35 @@ struct DayCell: View {
     let intensity: Int
     
     var body: some View {
-        VStack(spacing: 2) {
+        VStack(spacing: 4) {
+            // 圆形模块（预留图片位置）
+            Circle()
+                .fill(
+                    hasRecord ? 
+                        Color.themeColor.opacity(Color.getOpacityForIntensity(intensity)) : 
+                        Color.clear
+                )
+                .frame(width: 32, height: 32)
+                .overlay(
+                    // 这里可以放置图片
+                    Image("ballwhite")
+                        .resizable()  // 允许图片调整大小
+                        .aspectRatio(contentMode: .fit)  // 保持宽高比
+                        .foregroundColor(.white)
+                        .opacity(hasRecord ? 1 : 0)
+                )
+                .overlay(  // 添加边框
+                    Circle()
+                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                )
+            
+            // 日期文字
             Text("\(Calendar.current.component(.day, from: date))")
-                .font(.system(size: 14))
+                .font(.system(size: 12))
+                .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 40)
-        .background(
-            hasRecord ? 
-                Color.themeColor.opacity(Color.getOpacityForIntensity(intensity)) : 
-                Color.clear
-        )
-        .clipShape(Circle())
+        .frame(height: 50)
     }
 }
 

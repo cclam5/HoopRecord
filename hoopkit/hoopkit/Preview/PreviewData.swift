@@ -8,7 +8,7 @@ class PreviewData {
     var sampleRecords: [BasketballRecord] = []
     
     init() {
-        container = NSPersistentContainer(name: "hoopkit")
+        container = NSPersistentContainer(name: "BallTrack")
         container.persistentStoreDescriptions.first?.url = URL(fileURLWithPath: "/dev/null")
         
         container.loadPersistentStores { description, error in

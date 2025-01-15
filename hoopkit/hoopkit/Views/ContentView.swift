@@ -51,9 +51,9 @@ struct ContentView: View {
             
             Spacer()
             
-            Image(systemName: "basketball")
+            Image("ballgreen")
                 .foregroundColor(.themeColor)
-                .imageScale(.large)
+                .imageScale(.small)
             
             Spacer()
             

@@ -250,7 +250,7 @@ struct StatisticsView: View {
                     Button(action: previousMonth) {
                         Image(systemName: "chevron.left")
                             .foregroundColor(.secondary)
-                            .imageScale(.large)
+                            .imageScale(.small)
                     }
                     
                     Text(monthString)
@@ -261,7 +261,7 @@ struct StatisticsView: View {
                     Button(action: nextMonth) {
                         Image(systemName: "chevron.right")
                             .foregroundColor(.secondary)
-                            .imageScale(.large)
+                            .imageScale(.small)
                     }
                 }
                 .padding(.vertical, 10)
@@ -638,7 +638,7 @@ struct MonthlyDistributionChart: View {
     }
     
     var body: some View {
-        let _ = print("\n开始渲染月度图表...")  // 添加视图渲染标记
+        let _ = print("\n开始渲染月度图表...")
         
         return Chart(monthlyData, id: \.0) { item in
             let intensity = getAverageIntensity(for: item.0)
@@ -655,7 +655,7 @@ struct MonthlyDistributionChart: View {
             .cornerRadius(4)
         }
         .chartXAxis {
-            AxisMarks(values: [1, 5, 10, 15, 20, 25, 30]) { value in
+            AxisMarks(preset: .aligned, values: [1, 5, 10, 15, 20, 25, 30]) { value in
                 AxisGridLine()
                     .foregroundStyle(Color.secondary.opacity(0.2))
                 AxisValueLabel {
