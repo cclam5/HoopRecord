@@ -9,7 +9,7 @@ struct CalendarView: View {
     private let gridColumns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
     
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 12) {
             // 星期标题行
             HStack(spacing: 0) {
                 ForEach(daysInWeek, id: \.self) { day in
@@ -21,7 +21,7 @@ struct CalendarView: View {
             }
             
             // 日历网格
-            LazyVGrid(columns: gridColumns, spacing: 0) {
+            LazyVGrid(columns: gridColumns, spacing: 4) {
                 ForEach(daysInMonth(), id: \.self) { date in
                     if let date = date {
                         DayCell(
@@ -33,7 +33,7 @@ struct CalendarView: View {
                     } else {
                         Color.clear
                             .aspectRatio(1, contentMode: .fill)
-                            .frame(height: 40)
+                            .frame(height: 50)
                     }
                 }
             }
@@ -89,18 +89,23 @@ struct DayCell: View {
     let intensity: Int
     
     var body: some View {
-        VStack(spacing: 2) {
+        VStack(spacing: 4) {
+            // 圆形指示器
+            Circle()
+                .fill(
+                    hasRecord ? 
+                        Color.themeColor.opacity(Color.getOpacityForIntensity(intensity)) : 
+                        Color.gray.opacity(0.1)  // 添加浅灰色背景
+                )
+                .frame(width: 28, height: 28)  // 圆形大小
+            
+            // 日期文字
             Text("\(Calendar.current.component(.day, from: date))")
-                .font(.system(size: 14))
+                .font(.system(size: 12))
+                .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 40)
-        .background(
-            hasRecord ? 
-                Color.themeColor.opacity(Color.getOpacityForIntensity(intensity)) : 
-                Color.clear
-        )
-        .clipShape(Circle())
+        .frame(height: 50)
     }
 }
 
