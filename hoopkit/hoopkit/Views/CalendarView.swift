@@ -95,7 +95,7 @@ struct DayCell: View {
                 .fill(
                     hasRecord ? 
                         Color.themeColor.opacity(Color.getOpacityForIntensity(intensity)) : 
-                        Color.gray.opacity(0.1)  // 添加浅灰色背景
+                        Color(red: 0.98, green: 0.96, blue: 0.94)  // 米白色背景
                 )
                 .frame(width: 28, height: 28)  // 圆形大小
             

@@ -235,11 +235,11 @@ struct StatisticsView: View {
     }
     
     private let intensityLegends = [
-        (level: 1, opacity: 0.3),
-        (level: 2, opacity: 0.45),
-        (level: 3, opacity: 0.6),
-        (level: 4, opacity: 0.75),
-        (level: 5, opacity: 0.9)
+        (level: 1, opacity: 0.4),
+        (level: 2, opacity: 0.55),
+        (level: 3, opacity: 0.7),
+        (level: 4, opacity: 0.85),
+        (level: 5, opacity: 1.0)
     ]
     
     var body: some View {
@@ -322,7 +322,7 @@ struct StatisticsView: View {
                             .foregroundColor(.primary)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
-                            .background(Color(.systemGray6))
+                            .background(Color(red: 0.98, green: 0.96, blue: 0.94))
                             .clipShape(Capsule())
                             .frame(width: 65, height: 28)
                         }
@@ -367,17 +367,17 @@ struct StatisticsView: View {
                 
                 // 添加间距
                 Spacer()
-                    .frame(height: 30) // 在日历视图前添加额外间距
+                    .frame(height: 4) // 在日历视图前添加额外间距
                 
                 // 日历视图
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 18) {
                     HStack {
                         Text("打球日历")
                             .font(.headline)
                             .foregroundColor(.secondary)
                         Spacer()
                         // 添加强度图例和标题
-                        HStack(spacing: 8) {  // 增加间距
+                        HStack(spacing: 8) {
                             Text("强度")
                                 .font(.caption)
                                 .foregroundColor(.gray)
@@ -395,7 +395,13 @@ struct StatisticsView: View {
                     CalendarView(records: filteredRecords, selectedDate: selectedDate)
                         .padding(.vertical)
                 }
-                .padding(.horizontal)
+                .padding(.vertical, 12)  // 增加内边距
+                .background(  // 添加背景和阴影
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.white)
+                        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+                )
+                .padding(.horizontal)  // 保持水平边距
             }
             .padding(.vertical)
         }
@@ -617,16 +623,19 @@ struct WeeklyDistributionChart: View {
                                 Text(record.wrappedGameType)
                                     .font(.subheadline)
                                     .foregroundColor(.primary)
+                                    .lineLimit(1)
                                 
                                 HStack(spacing: 12) {
                                     Label {
                                         Text(String(format: "%.1f小时", Double(record.duration) / 60.0))
+                                            .lineLimit(1)
                                     } icon: {
                                         Image(systemName: "clock")
                                     }
                                     
                                     Label {
                                         Text(String(repeating: "🔥", count: Int(record.intensity)))
+                                            .lineLimit(1)
                                     } icon: {
                                         Image(systemName: "flame")
                                     }
@@ -635,6 +644,7 @@ struct WeeklyDistributionChart: View {
                                 .foregroundColor(.secondary)
                             }
                             .padding(.vertical, 4)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                             
                             if record.id != dayRecords.last?.id {
                                 Divider()
@@ -642,6 +652,7 @@ struct WeeklyDistributionChart: View {
                         }
                     }
                     .padding()
+                    .frame(minWidth: 160, maxWidth: 220)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color.white)
@@ -863,16 +874,19 @@ struct MonthlyDistributionChart: View {
                                 Text(record.wrappedGameType)
                                     .font(.subheadline)
                                     .foregroundColor(.primary)
+                                    .lineLimit(1)
                                 
                                 HStack(spacing: 12) {
                                     Label {
                                         Text(String(format: "%.1f小时", Double(record.duration) / 60.0))
+                                            .lineLimit(1)
                                     } icon: {
                                         Image(systemName: "clock")
                                     }
                                     
                                     Label {
                                         Text(String(repeating: "🔥", count: Int(record.intensity)))
+                                            .lineLimit(1)
                                     } icon: {
                                         Image(systemName: "flame")
                                     }
@@ -881,6 +895,7 @@ struct MonthlyDistributionChart: View {
                                 .foregroundColor(.secondary)
                             }
                             .padding(.vertical, 4)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                             
                             if record.id != dayRecords.last?.id {
                                 Divider()
@@ -888,6 +903,7 @@ struct MonthlyDistributionChart: View {
                         }
                     }
                     .padding()
+                    .frame(minWidth: 160, maxWidth: 220)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color.white)

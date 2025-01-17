@@ -173,6 +173,7 @@ struct RecordRow: View {
     let record: BasketballRecord
     let onUpdate: () -> Void
     @State private var showingDetail = false
+    @State private var isExpanded = false  // 添加展开状态
     @Environment(\.managedObjectContext) private var viewContext
     
     private var durationInHours: String {
@@ -236,11 +237,24 @@ struct RecordRow: View {
             
             // 3. 心得（如果有）
             if let notes = record.notes, !notes.isEmpty {
-                Text(notes)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .lineLimit(2)
-                    .padding(.vertical, 2)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(notes)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .lineLimit(isExpanded ? nil : 5)
+                    
+                    Button(action: {
+                        withAnimation {
+                            isExpanded.toggle()
+                        }
+                    }) {
+                        Text(isExpanded ? "收起" : "展开")
+                            .font(.subheadline)
+                            .foregroundColor(.themeColor)
+                    }
+                    .opacity(notes.count > 100 ? 1 : 0)
+                }
+                .padding(.vertical, 2)
             }
             
             // 4. 标签（如果有）
@@ -261,7 +275,7 @@ struct RecordRow: View {
             }
         }
         .padding()
-        .background(Color(red: 0.99, green: 0.99, blue: 0.99))
+        .background(Color(red: 0.98, green: 0.98, blue: 0.98))
         .cornerRadius(12)
         .sheet(isPresented: $showingDetail) {
             RecordDetailView(record: record)

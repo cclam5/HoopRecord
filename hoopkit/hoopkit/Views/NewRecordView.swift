@@ -81,6 +81,7 @@ struct NewRecordView: View {
     private var gameTypeMenu: some View {
         HStack {
             Text("类型")
+                .font(.system(size: 14))
                 .foregroundColor(.secondary)
             
             Menu {
@@ -99,6 +100,7 @@ struct NewRecordView: View {
             } label: {
                 HStack {
                     Text(gameType)
+                        .font(.system(size: 14))
                         .foregroundColor(.primary)
                     Image(systemName: "chevron.down")
                         .font(.system(size: 14))
@@ -106,7 +108,7 @@ struct NewRecordView: View {
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
-                .background(Color(.systemGray6))
+                .background(Color(red: 0.98, green: 0.96, blue: 0.94))
                 .cornerRadius(8)
             }
         }
@@ -115,11 +117,13 @@ struct NewRecordView: View {
     private var intensityControl: some View {
         HStack {
             Text("强度")
+                .font(.system(size: 14))
                 .foregroundColor(.secondary)
             HStack(spacing: 4) {
                 ForEach(1...5, id: \.self) { index in
                     Button(action: { intensity = index }) {
                         Image(systemName: index <= intensity ? "flame.fill" : "flame")
+                            .font(.system(size: 14))
                             .foregroundColor(index <= intensity ? .themeColor : .gray)
                     }
                 }
@@ -131,8 +135,11 @@ struct NewRecordView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text("时长")
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
                 Spacer()
                 Text("\(Int(duration))分钟")
+                    .font(.system(size: 14))
                     .foregroundColor(.secondary)
             }
             
@@ -148,10 +155,12 @@ struct NewRecordView: View {
             ForEach(durationPresets, id: \.self) { mins in
                 Button(action: { duration = Double(mins) }) {
                     Text("\(mins)")
-                        .font(.footnote)
+                        .font(.system(size: 13))
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
-                        .background(duration == Double(mins) ? Color.themeColor : Color(.systemGray6))
+                        .background(duration == Double(mins) ? 
+                            Color.themeColor : 
+                            Color(red: 0.98, green: 0.96, blue: 0.94))
                         .foregroundColor(duration == Double(mins) ? .white : .themeColor)
                         .cornerRadius(8)
                 }
@@ -162,19 +171,21 @@ struct NewRecordView: View {
     private var notesView: some View {
         ScrollView {
             TextEditor(text: $notes)
+                .font(.system(size: 14))
                 .frame(minHeight: 100)
                 .overlay(
                     Group {
                         if notes.isEmpty {
                             Text("记录今天的心得...")
+                                .font(.system(size: 14))
                                 .foregroundColor(.secondary)
                                 .padding(.leading, 4)
-                                .padding(.top, 8)
+                                .padding(.top, 4)
                         }
                     },
                     alignment: .topLeading
                 )
-                .padding()
+                .padding(8)
         }
         .frame(maxHeight: 150)
     }
@@ -189,6 +200,7 @@ struct NewRecordView: View {
     
     private var tagInputField: some View {
         TextField("输入标签名称，空格键添加", text: $newTagName)
+            .font(.system(size: 14))
             .textFieldStyle(RoundedBorderTextFieldStyle())
             .onSubmit {
                 addTagIfNeeded()

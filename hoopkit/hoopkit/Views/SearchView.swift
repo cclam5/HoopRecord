@@ -31,13 +31,12 @@ struct SearchView: View {
                             Image(systemName: "xmark.circle.fill")
                                 .foregroundColor(.secondary)
                                 .font(.system(size: 14))
-
                         }
                     }
                 }
                 .padding(.vertical, 8)
                 .padding(.horizontal, 10)
-                .background(Color(.systemGray5))
+                .background(Color(red: 0.98, green: 0.96, blue: 0.94))
                 .cornerRadius(14)
                 .frame(height: 34)
             }
