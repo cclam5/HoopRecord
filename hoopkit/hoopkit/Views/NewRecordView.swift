@@ -72,168 +72,26 @@ struct NewRecordView: View {
     
     private var typeAndIntensityView: some View {
         HStack {
-            gameTypeMenu
+            GameTypeSelector(gameTypes: gameTypes, selectedType: $gameType)
             Spacer()
-            intensityControl
-        }
-    }
-    
-    private var gameTypeMenu: some View {
-        HStack {
-            Text("类型")
-                .font(.system(size: 14))
-                .foregroundColor(.secondary)
-            
-            Menu {
-                ForEach(gameTypes, id: \.self) { type in
-                    Button(action: { gameType = type }) {
-                        HStack {
-                            Text(type)
-                                .foregroundColor(.primary)
-                            if gameType == type {
-                                Image(systemName: "checkmark")
-                                    .foregroundColor(.primary)
-                            }
-                        }
-                    }
-                }
-            } label: {
-                HStack {
-                    Text(gameType)
-                        .font(.system(size: 14))
-                        .foregroundColor(.primary)
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 14))
-                        .foregroundColor(.primary)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(Color(red: 0.98, green: 0.96, blue: 0.94))
-                .cornerRadius(8)
-            }
-        }
-    }
-    
-    private var intensityControl: some View {
-        HStack {
-            Text("强度")
-                .font(.system(size: 14))
-                .foregroundColor(.secondary)
-            HStack(spacing: 4) {
-                ForEach(1...5, id: \.self) { index in
-                    Button(action: { intensity = index }) {
-                        Image(systemName: index <= intensity ? "flame.fill" : "flame")
-                            .font(.system(size: 14))
-                            .foregroundColor(index <= intensity ? .themeColor : .gray)
-                    }
-                }
-            }
+            IntensityControl(intensity: $intensity)
         }
     }
     
     private var durationView: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("时长")
-                    .font(.system(size: 14))
-                    .foregroundColor(.secondary)
-                Spacer()
-                Text("\(Int(duration))分钟")
-                    .font(.system(size: 14))
-                    .foregroundColor(.secondary)
-            }
-            
-            Slider(value: $duration, in: 0...240, step: 1)
-                .accentColor(.themeColor)
-            
-            durationPresetsView
-        }
-    }
-    
-    private var durationPresetsView: some View {
-        HStack(spacing: 8) {
-            ForEach(durationPresets, id: \.self) { mins in
-                Button(action: { duration = Double(mins) }) {
-                    Text("\(mins)")
-                        .font(.system(size: 13))
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(duration == Double(mins) ? 
-                            Color.themeColor : 
-                            Color(red: 0.98, green: 0.96, blue: 0.94))
-                        .foregroundColor(duration == Double(mins) ? .white : .themeColor)
-                        .cornerRadius(8)
-                }
-            }
-        }
+        DurationSelector(duration: $duration, presets: durationPresets)
     }
     
     private var notesView: some View {
-        ScrollView {
-            TextEditor(text: $notes)
-                .font(.system(size: 14))
-                .frame(minHeight: 100)
-                .overlay(
-                    Group {
-                        if notes.isEmpty {
-                            Text("记录今天的心得...")
-                                .font(.system(size: 14))
-                                .foregroundColor(.secondary)
-                                .padding(.leading, 4)
-                                .padding(.top, 4)
-                        }
-                    },
-                    alignment: .topLeading
-                )
-                .padding(8)
-        }
-        .frame(maxHeight: 150)
+        NotesEditor(notes: $notes)
     }
     
     private var tagInputView: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            tagInputField
-            selectedTagsView
-        }
-        .padding()
-    }
-    
-    private var tagInputField: some View {
-        TextField("输入标签名称，空格键添加", text: $newTagName)
-            .font(.system(size: 14))
-            .textFieldStyle(RoundedBorderTextFieldStyle())
-            .onSubmit {
-                addTagIfNeeded()
-            }
-            .onChange(of: newTagName) { oldValue, newValue in
-                if newValue.last == " " {
-                    addTagIfNeeded()
-                }
-            }
-    }
-    
-    private var selectedTagsView: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(Array(selectedTags)) { tag in
-                    tagView(for: tag)
-                }
-            }
-        }
-    }
-    
-    private func tagView(for tag: BasketballTag) -> some View {
-        HStack {
-            Text(tag.wrappedName)
-            Button(action: { selectedTags.remove(tag) }) {
-                Image(systemName: "xmark.circle.fill")
-                    .foregroundColor(.secondary)
-            }
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background(Color(.systemGray6))
-        .cornerRadius(15)
+        TagInput(
+            newTagName: $newTagName,
+            selectedTags: $selectedTags,
+            onSubmit: addTagIfNeeded
+        )
     }
     
     // MARK: - 工具栏
