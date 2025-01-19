@@ -9,7 +9,7 @@ struct CalendarView: View {
     private let gridColumns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
     
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 8) {
             // 星期标题行
             HStack(spacing: 0) {
                 ForEach(daysInWeek, id: \.self) { day in
@@ -21,14 +21,15 @@ struct CalendarView: View {
             }
             
             // 日历网格
-            LazyVGrid(columns: gridColumns, spacing: 4) {
+            LazyVGrid(columns: gridColumns, spacing: 2) {
                 ForEach(daysInMonth(), id: \.self) { date in
                     if let date = date {
                         DayCell(
                             date: date,
                             hasRecord: hasRecord(on: date),
                             duration: getDuration(for: date),
-                            intensity: getIntensity(for: date)
+                            intensity: getIntensity(for: date),
+                            isToday: calendar.isDateInToday(date)
                         )
                     } else {
                         Color.clear
@@ -87,22 +88,32 @@ struct DayCell: View {
     let hasRecord: Bool
     let duration: Int
     let intensity: Int
+    let isToday: Bool
     
     var body: some View {
-        VStack(spacing: 4) {
-            // 圆形指示器
+        VStack(spacing: 2) {
             Circle()
-                .fill(
+                .stroke(
                     hasRecord ? 
-                        Color.themeColor.opacity(Color.getOpacityForIntensity(intensity)) : 
-                        Color(red: 0.98, green: 0.96, blue: 0.94)  // 米白色背景
+                        Color.darkThemeColor.opacity(Color.getOpacityForIntensity(intensity)) : 
+                        Color.clear,
+                    lineWidth: 1.5
                 )
-                .frame(width: 28, height: 28)  // 圆形大小
+                .frame(width: 32, height: 32)
+                .overlay(
+                    Text("\(Calendar.current.component(.day, from: date))")
+                        .font(.system(size: 12))
+                        .foregroundColor(.black)
+                )
             
-            // 日期文字
-            Text("\(Calendar.current.component(.day, from: date))")
-                .font(.system(size: 12))
-                .foregroundColor(.secondary)
+            if isToday {
+                Circle()
+                    .fill(Color.green)
+                    .frame(width: 4, height: 4)
+            } else {
+                Color.clear
+                    .frame(width: 4, height: 4)
+            }
         }
         .frame(maxWidth: .infinity)
         .frame(height: 50)

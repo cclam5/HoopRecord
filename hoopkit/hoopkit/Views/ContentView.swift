@@ -1,11 +1,6 @@
 import SwiftUI
 import CoreData
 
-// 定义全局主题色
-extension Color {
-    static let themeColor = Color(red: 0, green: 0.3, blue: 0)  // 使用深森林绿
-    static let aColor = Color(red: 0, green: 0.2, blue: 0)  // 使用深森林绿
-}
 
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext

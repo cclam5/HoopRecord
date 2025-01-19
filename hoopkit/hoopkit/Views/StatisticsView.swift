@@ -384,7 +384,7 @@ struct StatisticsView: View {
                             HStack(spacing: 4) {
                                 ForEach(intensityLegends, id: \.level) { legend in
                                     Circle()
-                                        .fill(Color.themeColor.opacity(legend.opacity))
+                                        .fill(Color.darkThemeColor.getOpacityForIntensity(legend.opacity))
                                         .frame(width: 8, height: 8)
                                 }
                             }
@@ -393,7 +393,7 @@ struct StatisticsView: View {
                     .padding(.horizontal)
                     
                     CalendarView(records: filteredRecords, selectedDate: selectedDate)
-                        .padding(.vertical)
+                        // .padding(.vertical)
                 }
                 .padding(.vertical, 12)  // 增加内边距
                 .background(  // 添加背景和阴影
@@ -550,7 +550,7 @@ struct WeeklyDistributionChart: View {
                 width: .fixed(16)
             )
             .foregroundStyle(
-                Color.themeColor.opacity(
+                Color.darkThemeColor.opacity(
                     Color.getOpacityForIntensity(getAverageIntensity(for: item.0))
                 )
             )
@@ -794,7 +794,7 @@ struct MonthlyDistributionChart: View {
                 y: .value("时长", item.1),
                 width: .fixed(6)
             )
-            .foregroundStyle(Color.themeColor.opacity(opacity))
+            .foregroundStyle(Color.darkThemeColor.opacity(opacity))
             .cornerRadius(4)
             .opacity(selectedBar == nil || 
                     selectedBar == day || 
