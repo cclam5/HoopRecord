@@ -41,6 +41,8 @@ struct NewRecordView: View {
                 Spacer()
                 Divider()
                 tagInputView
+                    .padding(.horizontal)
+                    .padding(.vertical, ViewStyles.smallPadding)
             }
             .background(Color(.systemBackground))
             .navigationTitle("新记录")
@@ -87,11 +89,13 @@ struct NewRecordView: View {
     }
     
     private var tagInputView: some View {
-        TagInput(
-            newTagName: $newTagName,
-            selectedTags: $selectedTags,
-            onSubmit: addTagIfNeeded
-        )
+        VStack(alignment: .leading) {
+            TagInput(
+                newTagName: $newTagName,
+                selectedTags: $selectedTags,
+                onSubmit: addTagIfNeeded
+            )
+        }
     }
     
     // MARK: - 工具栏

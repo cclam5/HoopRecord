@@ -91,7 +91,8 @@ struct RecordDetailView: View {
                 
                 // 标签部分固定在底部
                 tagInputView
-                    .padding()
+                    .padding(.horizontal)
+                    .padding(.vertical, ViewStyles.smallPadding)
             }
             .navigationTitle("记录详情")
             .navigationBarTitleDisplayMode(.inline)
@@ -211,11 +212,13 @@ struct RecordDetailView: View {
                         .font(ViewStyles.labelFont)
                         .foregroundColor(.primary)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(ViewStyles.smallPadding)
                 } else {
                     Text("未填写心得")
                         .font(ViewStyles.labelFont)
                         .foregroundColor(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(ViewStyles.smallPadding)
                 }
             }
         }
@@ -249,7 +252,7 @@ struct RecordDetailView: View {
                 }
             }
         }
-        .padding(.vertical, ViewStyles.smallPadding)
+        // .padding(.vertical, ViewStyles.smallPadding)
     }
     
     private func addTagIfNeeded() {

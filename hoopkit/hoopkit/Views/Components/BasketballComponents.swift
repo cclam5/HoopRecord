@@ -114,22 +114,21 @@ struct NotesEditor: View {
         ScrollView {
             TextEditor(text: $notes)
                 .font(ViewStyles.labelFont)
-                .frame(minHeight: 100)
-                .overlay(
+                .frame(minHeight: 400)
+                .overlay(  
                     Group {
                         if notes.isEmpty {
                             Text("记录今天的心得...")
                                 .font(ViewStyles.labelFont)
                                 .foregroundColor(ViewStyles.labelColor)
-                                .padding(.leading, ViewStyles.tinyPadding)
-                                .padding(.top, ViewStyles.tinyPadding)
+                                .padding(.leading, 5)       // 调整左边距以匹配光标位置
+                                .padding(.top, 8)          // 调整顶部边距以匹配光标位置
                         }
                     },
                     alignment: .topLeading
                 )
-                .padding(ViewStyles.smallPadding)
         }
-        .frame(maxHeight: 150)
+        .frame(maxHeight: 600)
     }
 }
 
@@ -145,6 +144,12 @@ struct TagInput: View {
                 .font(ViewStyles.labelFont)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .onSubmit(onSubmit)
+                .onChange(of: newTagName) { newValue in
+                    if newValue.last == " " {  // 检测到空格
+                        newTagName = newValue.trimmingCharacters(in: .whitespaces)
+                        onSubmit()
+                    }
+                }
             
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: ViewStyles.smallPadding) {
