@@ -180,7 +180,7 @@ struct TagView: View {
         }
         .padding(.horizontal, ViewStyles.defaultPadding)
         .padding(.vertical, ViewStyles.smallPadding)
-        .background(Color(.systemGray6))
-        .cornerRadius(15)
+        .background(ViewStyles.backgroundColor)
+        .cornerRadius(ViewStyles.cornerRadius)
     }
 } 

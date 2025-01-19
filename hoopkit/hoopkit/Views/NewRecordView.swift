@@ -45,12 +45,17 @@ struct NewRecordView: View {
                     .padding(.vertical, ViewStyles.smallPadding)
             }
             .background(Color(.systemBackground))
-            .navigationTitle("新记录")
+            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("新记录")
+                        .font(.headline)
+                }
                 toolbarContent
             }
         }
+        .navigationViewStyle(StackNavigationViewStyle())
         .interactiveDismissDisabled(hasUnsavedContent)
         .alert("放弃编辑", isPresented: $showingDiscardAlert) {
             Button("继续编辑", role: .cancel) { }

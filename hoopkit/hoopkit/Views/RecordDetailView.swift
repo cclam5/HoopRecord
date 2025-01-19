@@ -48,7 +48,7 @@ struct RecordDetailView: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {  // 使用 VStack 作为根容器
+            VStack(spacing: 0) {
                 ScrollView {
                     VStack(spacing: 0) {
                         // 时间选择部分
@@ -94,9 +94,13 @@ struct RecordDetailView: View {
                     .padding(.horizontal)
                     .padding(.vertical, ViewStyles.smallPadding)
             }
-            .navigationTitle("记录详情")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle("")  // 移除标题
+            .navigationBarTitleDisplayMode(.inline)  // 使用 inline 模式
             .toolbar {
+                ToolbarItem(placement: .principal) {  // 使用 principal 位置
+                    Text("记录详情")
+                        .font(.headline)
+                }
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(isEditing ? "取消" : "返回") {
                         if isEditing && hasUnsavedChanges {
@@ -123,6 +127,7 @@ struct RecordDetailView: View {
                 }
             }
         }
+        .navigationViewStyle(StackNavigationViewStyle())  // 添加这行来减小导航栏高度
         .alert("放弃更改", isPresented: $showingDiscardAlert) {
             Button("继续编辑", role: .cancel) { }
             Button("放弃", role: .destructive) {
@@ -241,6 +246,8 @@ struct RecordDetailView: View {
                                     .font(ViewStyles.labelFont)
                                     .padding(.horizontal, ViewStyles.defaultPadding)
                                     .padding(.vertical, ViewStyles.smallPadding)
+                                    .background(ViewStyles.backgroundColor)  // 使用与时间组件相同的背景色
+                                    .cornerRadius(ViewStyles.cornerRadius)
                             }
                         }
                     }
@@ -252,7 +259,6 @@ struct RecordDetailView: View {
                 }
             }
         }
-        // .padding(.vertical, ViewStyles.smallPadding)
     }
     
     private func addTagIfNeeded() {
