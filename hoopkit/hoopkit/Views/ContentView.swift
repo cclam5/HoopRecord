@@ -15,13 +15,23 @@ struct ContentView: View {
     @State private var refreshID = UUID()
     
     var body: some View {
-        NavigationView {
-            VStack(spacing: 0) {
-                toolbarView
-                mainContentView
+        ZStack {  // 将 ZStack 移到最外层
+            NavigationView {
+                VStack(spacing: 0) {
+                    toolbarView
+                    mainContentView
+                }
+                .navigationBarHidden(true)
+                .background(Color.white)
             }
-            .navigationBarHidden(true)
-            .background(Color.white)
+            
+            // 遮罩移到这里，覆盖整个导航视图
+            if showingNewRecord {
+                Color.black
+                    .opacity(0.6)
+                    .ignoresSafeArea()
+                    .transition(.scale)
+            }
         }
         .sheet(isPresented: $showingNewRecord) {
             NewRecordView()
@@ -41,25 +51,29 @@ struct ContentView: View {
             NavigationLink(destination: StatisticsView().navigationBarBackButtonHidden(true)) {
                 Image(systemName: "chart.bar.fill")
                     .foregroundColor(.themeColor)
-                    .imageScale(.large)
+                    .imageScale(.medium)
             }
             
             Spacer()
             
             Image("ballIcon")
                 .foregroundColor(.themeColor)
-                .imageScale(.large)
+                .imageScale(.medium)
                 .rotationEffect(.degrees(90))
-            
+            // Text("Hooptrack")
+            //     .font(.system(.subheadline, design: .monospaced))
+            //     .fontWeight(.black)
+            //     .foregroundColor(.darkThemeColor)
             Spacer()
             
             NavigationLink(destination: SearchView().navigationBarBackButtonHidden(true)) {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.themeColor)
-                    .imageScale(.large)
+                    .imageScale(.medium)
             }
         }
-        .padding()
+        .padding(.horizontal)
+        .padding(.vertical, 12)
         .background(Color(.systemBackground))
         .shadow(color: Color.black.opacity(0.05), radius: 1, y: 1)
     }

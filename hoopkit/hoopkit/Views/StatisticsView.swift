@@ -235,16 +235,16 @@ struct StatisticsView: View {
     }
     
     private let intensityLegends = [
-        (level: 1, opacity: 0.4),
-        (level: 2, opacity: 0.55),
-        (level: 3, opacity: 0.7),
-        (level: 4, opacity: 0.85),
+        (level: 1, opacity: 0.65),
+        (level: 2, opacity: 0.75),
+        (level: 3, opacity: 0.85),
+        (level: 4, opacity: 0.93),
         (level: 5, opacity: 1.0)
     ]
     
     var body: some View {
         ScrollView {
-            VStack(spacing: 12) {
+            VStack(spacing: 8) {
                 // 月份选择器
                 HStack {
                     Button(action: previousMonth) {
@@ -264,7 +264,7 @@ struct StatisticsView: View {
                             .imageScale(.small)
                     }
                 }
-                .padding(.vertical, 10)
+                .padding(.vertical, 6)
                 
                 // 统计卡片
                 VStack(alignment: .leading, spacing: 8) {
@@ -384,7 +384,7 @@ struct StatisticsView: View {
                             HStack(spacing: 4) {
                                 ForEach(intensityLegends, id: \.level) { legend in
                                     Circle()
-                                        .fill(Color.darkThemeColor.getOpacityForIntensity(legend.opacity))
+                                        .fill(Color.darkThemeColor.opacity(legend.opacity))
                                         .frame(width: 8, height: 8)
                                 }
                             }
@@ -410,13 +410,13 @@ struct StatisticsView: View {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: { dismiss() }) {
                     Image(systemName: "chevron.left")
-                        .foregroundColor(.secondary)
-                        .imageScale(.large)
+                        .foregroundColor(.darkThemeColor)
+                        .imageScale(.medium)
                 }
             }
         }
         .toolbarBackground(.hidden, for: .navigationBar)
-        .navigationBarBackButtonHidden(true)
+        .navigationBarBackButtonHidden(false)
         .background(Color.white)
         .confirmationDialog("选择时间范围", isPresented: $showingTimeRangeSheet, titleVisibility: .hidden) {
             Button("周") {

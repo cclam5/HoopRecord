@@ -40,7 +40,8 @@ struct SearchView: View {
                 .cornerRadius(14)
                 .frame(height: 34)
             }
-            .padding()
+            .padding(.horizontal)
+            .padding(.vertical, 6)
             .background(Color.white)
             
             if searchText.isEmpty {
