@@ -10,6 +10,7 @@ struct ContentView: View {
     private var records: FetchedResults<BasketballRecord>
     
     @State private var showingNewRecord = false
+    @State private var showingDetail = false
     @State private var scrollOffset: CGFloat = 0
     @State private var contentHeight: CGFloat = 0
     @State private var refreshID = UUID()
@@ -26,11 +27,12 @@ struct ContentView: View {
             }
             
             // 遮罩移到这里，覆盖整个导航视图
-            if showingNewRecord {
+            if showingNewRecord || showingDetail {
                 Color.black
-                    .opacity(0.6)
+                    .opacity(0.3)
                     .ignoresSafeArea()
-                    .transition(.scale)
+                    .transition(.opacity.combined(with: .scale(scale: 1.02)))
+                    .animation(.easeOut(duration: 0.15), value: showingNewRecord || showingDetail)
             }
         }
         .sheet(isPresented: $showingNewRecord) {
@@ -141,7 +143,7 @@ struct ContentView: View {
             ForEach(groupedRecords[month] ?? []) { record in
                 RecordRow(record: record, onUpdate: {
                     refreshID = UUID()
-                })
+                }, parentShowingDetail: $showingDetail)
                 .id(refreshID)
                 .padding(.horizontal)
             }
@@ -181,8 +183,8 @@ struct ContentView: View {
 struct RecordRow: View {
     let record: BasketballRecord
     let onUpdate: () -> Void
-    @State private var showingDetail = false
-    @State private var isExpanded = false  // 添加展开状态
+    @Binding var parentShowingDetail: Bool
+    @State private var isExpanded = false
     @Environment(\.managedObjectContext) private var viewContext
     
     private var durationInHours: String {
@@ -216,7 +218,9 @@ struct RecordRow: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
-                Button(action: { showingDetail = true }) {
+                Button(action: { 
+                    parentShowingDetail = true
+                }) {
                     Image(systemName: "pencil")
                         .foregroundColor(.themeColor)
                         .imageScale(.large)
@@ -286,7 +290,7 @@ struct RecordRow: View {
         .padding()
         .background(Color(red: 0.985, green: 0.98, blue: 0.98))
         .cornerRadius(12)
-        .sheet(isPresented: $showingDetail) {
+        .sheet(isPresented: $parentShowingDetail) {
             RecordDetailView(record: record)
                 .environment(\.managedObjectContext, viewContext)
                 .onDisappear {

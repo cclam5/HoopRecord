@@ -5,6 +5,7 @@ struct SearchView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.dismiss) private var dismiss
     @State private var searchText = ""
+    @FocusState private var isSearchFocused: Bool
     
     var body: some View {
         VStack(spacing: 0) {
@@ -25,6 +26,7 @@ struct SearchView: View {
                     TextField("搜索", text: $searchText)
                         .textFieldStyle(PlainTextFieldStyle())
                         .font(.system(size: 14))
+                        .focused($isSearchFocused)
                     
                     if !searchText.isEmpty {
                         Button(action: { searchText = "" }) {
@@ -62,6 +64,9 @@ struct SearchView: View {
         }
         .navigationBarHidden(true)
         .background(Color.white)
+        .onAppear {
+            isSearchFocused = true
+        }
     }
 }
 
@@ -90,6 +95,7 @@ struct SearchBar: View {
 struct SearchResultList: View {
     @FetchRequest var records: FetchedResults<BasketballRecord>
     @State private var refreshID = UUID()
+    @State private var showingDetail = false
     
     init(searchText: String) {
         _records = FetchRequest(
@@ -105,7 +111,7 @@ struct SearchResultList: View {
             ForEach(records) { record in
                 RecordRow(record: record, onUpdate: {
                     refreshID = UUID()
-                })
+                }, parentShowingDetail: $showingDetail)
                 .id(refreshID)
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.white)
