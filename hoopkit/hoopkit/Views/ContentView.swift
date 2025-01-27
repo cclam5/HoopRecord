@@ -143,8 +143,7 @@ struct ContentView: View {
             ForEach(groupedRecords[month] ?? []) { record in
                 RecordRow(record: record, onUpdate: {
                     refreshID = UUID()
-                }, parentShowingDetail: $showingDetail)
-                .id(refreshID)
+                })
                 .padding(.horizontal)
             }
         }
@@ -183,7 +182,7 @@ struct ContentView: View {
 struct RecordRow: View {
     let record: BasketballRecord
     let onUpdate: () -> Void
-    @Binding var parentShowingDetail: Bool
+    @State private var showingDetail = false
     @State private var isExpanded = false
     @Environment(\.managedObjectContext) private var viewContext
     
@@ -219,7 +218,7 @@ struct RecordRow: View {
                     .foregroundColor(.secondary)
                 
                 Button(action: { 
-                    parentShowingDetail = true
+                    showingDetail = true
                 }) {
                     Image(systemName: "pencil")
                         .foregroundColor(.themeColor)
@@ -290,7 +289,7 @@ struct RecordRow: View {
         .padding()
         .background(Color(red: 0.985, green: 0.98, blue: 0.98))
         .cornerRadius(12)
-        .sheet(isPresented: $parentShowingDetail) {
+        .sheet(isPresented: $showingDetail) {
             RecordDetailView(record: record)
                 .environment(\.managedObjectContext, viewContext)
                 .onDisappear {
