@@ -80,7 +80,7 @@ struct SearchView: View {
             if searchText.isEmpty && !searchHistory.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        Text("搜索历史")
+                        Text("最近搜索")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                         
