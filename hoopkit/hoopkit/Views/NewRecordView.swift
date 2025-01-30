@@ -108,21 +108,35 @@ struct NewRecordView: View {
     private var toolbarContent: some ToolbarContent {
         Group {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button("取消") {
+                Button(action: {
                     if hasUnsavedContent {
                         showingDiscardAlert = true
                     } else {
                         dismiss()
                     }
+                }) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 13))
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        .background(Color.secondary.opacity(0.1))
+                        .cornerRadius(6)
                 }
-                .foregroundColor(.themeColor)
             }
             
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button("保存") {
+                Button(action: {
                     saveRecord()
+                }) {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 13))
+                        .foregroundColor(.themeColor)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        .background(Color.themeColor.opacity(0.1))
+                        .cornerRadius(6)
                 }
-                .foregroundColor(.themeColor)
             }
         }
     }

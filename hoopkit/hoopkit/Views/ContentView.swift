@@ -11,7 +11,7 @@ struct ContentView: View {
     
     @State private var showingNewRecord = false
     @State private var showingDetail = false
-    @State private var scrollOffset: CGFloat = 0
+    @State private var scrollOffset: CGFloat = 0    
     @State private var contentHeight: CGFloat = 0
     @State private var refreshID = UUID()
     
@@ -255,18 +255,18 @@ struct RecordRow: View {
                         .foregroundColor(.secondary)
                         .lineLimit(isExpanded ? nil : 5)
                     
-                    Button(action: {
-                        withAnimation {
-                            isExpanded.toggle()
+                    if notes.count > 100 {
+                        Button(action: {
+                            withAnimation {
+                                isExpanded.toggle()
+                            }
+                        }) {
+                            Text(isExpanded ? "收起" : "展开")
+                                .font(.subheadline)
+                                .foregroundColor(.themeColor)
                         }
-                    }) {
-                        Text(isExpanded ? "收起" : "展开")
-                            .font(.subheadline)
-                            .foregroundColor(.themeColor)
                     }
-                    .opacity(notes.count > 100 ? 1 : 0)
                 }
-                .padding(.vertical, 2)
             }
             
             // 4. 标签（如果有）
@@ -284,6 +284,7 @@ struct RecordRow: View {
                         }
                     }
                 }
+                .padding(.top, 4)
             }
         }
         .padding()

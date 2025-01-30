@@ -77,51 +77,52 @@ struct SearchView: View {
             .padding(.horizontal)
             .padding(.top, 8)  // 只保留顶部间距
             
-            if searchText.isEmpty && !searchHistory.isEmpty {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text("最近搜索")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        
-                        Spacer()
-                        
-                        Button(action: { 
-                            searchHistory.removeAll()
-                            saveSearchHistory()
-                        }) {
-                            Image(systemName: "trash")
+            if searchText.isEmpty {
+                if !searchHistory.isEmpty {
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Text("最近搜索")
+                                .font(.subheadline)
                                 .foregroundColor(.secondary)
-                                .imageScale(.small)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.top, 12)  // 添加小的顶部间距
-                    
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(searchHistory, id: \.self) { history in
-                                Button(action: {
-                                    searchText = history
-                                    addSearchHistory(history)
-                                }) {
-                                    Text(history)
-                                        .font(.subheadline)
-                                        .foregroundColor(.primary)
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 6)
-                                        .background(Color(red: 0.98, green: 0.96, blue: 0.94))
-                                        .cornerRadius(16)
-                                }
+                            
+                            Spacer()
+                            
+                            Button(action: { 
+                                searchHistory.removeAll()
+                                saveSearchHistory()
+                            }) {
+                                Image(systemName: "trash")
+                                    .foregroundColor(.secondary)
+                                    .imageScale(.small)
                             }
                         }
                         .padding(.horizontal)
-                        .padding(.top, 8)  // 添加小的顶部间距
+                        .padding(.top, 12)  // 添加小的顶部间距
+                        
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(searchHistory, id: \.self) { history in
+                                    Button(action: {
+                                        searchText = history
+                                        addSearchHistory(history)
+                                    }) {
+                                        Text(history)
+                                            .font(.subheadline)
+                                            .foregroundColor(.primary)
+                                            .padding(.horizontal, 12)
+                                            .padding(.vertical, 6)
+                                            .background(Color(red: 0.98, green: 0.96, blue: 0.94))
+                                            .cornerRadius(16)
+                                    }
+                                }
+                            }
+                            .padding(.horizontal)
+                            .padding(.top, 8)  // 添加小的顶部间距
+                        }
                     }
                 }
-                
-                Spacer()  // 将内容推到顶部
-            } else if !searchText.isEmpty {
+                Spacer()  // 将空白区域移到这里
+            } else {
                 SearchResultList(searchText: searchText)
             }
         }
@@ -157,9 +158,9 @@ struct SearchResultList: View {
                 }
             }
             .padding(.top, 12)
+            .padding(.horizontal, 14)  // 减小水平内边距
         }
         .background(Color.white)
-        .padding(.horizontal)
         .overlay {
             if records.isEmpty {
                 Text("未找到相关记录")

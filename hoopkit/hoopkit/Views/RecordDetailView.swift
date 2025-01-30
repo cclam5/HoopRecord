@@ -23,6 +23,7 @@ struct RecordDetailView: View {
     @State private var suggestedTags: [BasketballTag] = []  // 添加建议标签数组
     
     @State private var showingDiscardAlert = false
+    @State private var showingDeleteAlert = false  // 添加删除确认提示的状态
     
     init(record: BasketballRecord) {
         self.record = record
@@ -102,28 +103,44 @@ struct RecordDetailView: View {
                         .font(.headline)
                 }
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button(isEditing ? "取消" : "返回") {
-                        if isEditing && hasUnsavedChanges {
-                            showingDiscardAlert = true
-                        } else {
-                            if isEditing {
-                                isEditing = false
+                    Button(action: {
+                        if isEditing {
+                            if hasUnsavedChanges {
+                                showingDiscardAlert = true
                             } else {
-                                dismiss()
+                                isEditing = false
                             }
+                        } else {
+                            showingDeleteAlert = true
                         }
+                    }) {
+                        Image(systemName: isEditing ? "xmark" : "trash")
+                            .font(.system(size: 13))  // 设置图标大小
+                            .foregroundColor(isEditing ? .secondary : .red)
+                            .padding(.horizontal, 6)  // 减小内边距
+                            .padding(.vertical, 3)    // 减小内边距
+                            .background(isEditing ? 
+                                Color.secondary.opacity(0.1) : 
+                                Color.red.opacity(0.1))
+                            .cornerRadius(6)
                     }
-                    .foregroundColor(.themeColor)
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(isEditing ? "保存" : "编辑") {
+                    Button(action: {
                         if isEditing {
                             saveChanges()
                         }
                         isEditing.toggle()
+                    }) {
+                        Image(systemName: isEditing ? "checkmark" : "square.and.pencil")
+                            .font(.system(size: 13))  // 设置图标大小
+                            .foregroundColor(.themeColor)
+                            .padding(.horizontal, 6)  // 减小内边距
+                            .padding(.vertical, 3)    // 减小内边距
+                            .background(Color.themeColor.opacity(0.1))
+                            .cornerRadius(6)
                     }
-                    .foregroundColor(.themeColor)
                 }
             }
         }
@@ -142,6 +159,14 @@ struct RecordDetailView: View {
             }
         } message: {
             Text("当前更改尚未保存，确定要放弃吗？")
+        }
+        .alert("删除记录", isPresented: $showingDeleteAlert) {
+            Button("取消", role: .cancel) { }
+            Button("删除", role: .destructive) {
+                deleteRecord()
+            }
+        } message: {
+            Text("确定要删除这条记录吗？此操作无法撤销。")
         }
         .interactiveDismissDisabled(isEditing && hasUnsavedChanges)
     }
@@ -303,6 +328,13 @@ struct RecordDetailView: View {
             print("Error saving changes: \(error)")
         }
         
+        try? viewContext.save()
+        dismiss()
+    }
+    
+    // 添加删除记录的方法
+    private func deleteRecord() {
+        viewContext.delete(record)
         try? viewContext.save()
         dismiss()
     }
