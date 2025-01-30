@@ -1,6 +1,14 @@
 import SwiftUI
 import CoreData
 
+// 添加自定义 MenuStyle
+struct CompactMenu: MenuStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        Menu(configuration)
+            .fixedSize()
+            .contentShape(Rectangle())
+    }
+}
 
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
@@ -15,18 +23,22 @@ struct ContentView: View {
     @State private var contentHeight: CGFloat = 0
     @State private var refreshID = UUID()
     
+    // 添加新的状态变量
+    @State private var showingSettings = false
+    @State private var showingHelpCenter = false
+    
     var body: some View {
-        ZStack {  // 将 ZStack 移到最外层
+        ZStack {
             NavigationView {
                 VStack(spacing: 0) {
                     toolbarView
+                        .padding(.top, 8)  // 添加顶部间距
                     mainContentView
                 }
                 .navigationBarHidden(true)
                 .background(Color.white)
             }
             
-            // 遮罩移到这里，覆盖整个导航视图
             if showingNewRecord || showingDetail {
                 Color.black
                     .opacity(0.3)
@@ -44,38 +56,77 @@ struct ContentView: View {
                     blendDuration: 0
                 ), value: showingNewRecord)
         }
+        .fullScreenCover(isPresented: $showingSettings) {
+            SettingsView()
+        }
+        .fullScreenCover(isPresented: $showingHelpCenter) {
+            HelpCenterView()
+        }
     }
     
     // MARK: - 子视图
     
     private var toolbarView: some View {
-        HStack {
-            NavigationLink(destination: StatisticsView().navigationBarBackButtonHidden(true)) {
-                Image(systemName: "chart.bar.fill")
+        GeometryReader { geometry in
+            ZStack(alignment: .center) {
+                // 左侧按钮
+                HStack {
+                    NavigationLink(destination: StatisticsView().navigationBarBackButtonHidden(true)) {
+                        Image(systemName: "chart.bar.fill")
+                            .foregroundColor(.themeColor)
+                            .imageScale(.medium)
+                    }
+                    Spacer()
+                }
+                .padding(.leading, 8)  // 减小左侧内边距
+                
+                // 中间的 BallIcon，保证在屏幕正中间
+                Image("ballIcon")
                     .foregroundColor(.themeColor)
                     .imageScale(.medium)
+                    .rotationEffect(.degrees(90))
+                
+                // 右侧按钮组
+                HStack {
+                    Spacer()
+                    HStack(spacing: 16) {
+                        Menu {
+                            Button(action: { showingSettings = true }) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "gearshape")
+                                        .imageScale(.small)
+                                    Text("设置")
+                                        .font(.system(size: 12))
+                                }
+                            }
+                            Button(action: { showingHelpCenter = true }) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "questionmark.circle")
+                                        .imageScale(.small)
+                                    Text("帮助")
+                                        .font(.system(size: 12))
+                                }
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis")
+                                .foregroundColor(.themeColor)
+                                .imageScale(.medium)
+                        }
+                        .menuStyle(CompactMenu())  // 应用自定义菜单样式
+                        
+                        NavigationLink(destination: SearchView().navigationBarBackButtonHidden(true)) {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundColor(.themeColor)
+                                .imageScale(.medium)
+                        }
+                    }
+                }
+                .padding(.trailing, 8)  // 减小右侧内边距
             }
-            
-            Spacer()
-            
-            Image("ballIcon")
-                .foregroundColor(.themeColor)
-                .imageScale(.medium)
-                .rotationEffect(.degrees(90))
-            // Text("Hooptrack")
-            //     .font(.system(.subheadline, design: .monospaced))
-            //     .fontWeight(.black)
-            //     .foregroundColor(.darkThemeColor)
-            Spacer()
-            
-            NavigationLink(destination: SearchView().navigationBarBackButtonHidden(true)) {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(.themeColor)
-                    .imageScale(.medium)
-            }
+            .frame(width: geometry.size.width)
         }
-        .padding(.horizontal)
-        .padding(.vertical, 12)
+        .frame(height: 40)
+        .padding(.horizontal, 8)  // 减小整体水平内边距
         .background(Color(.systemBackground))
         .shadow(color: Color.black.opacity(0.05), radius: 1, y: 1)
     }
