@@ -44,7 +44,7 @@ struct SearchView: View {
                 Button(action: { dismiss() }) {
                     Image(systemName: "chevron.left")
                         .foregroundColor(.themeColor)
-                        .imageScale(.large)
+                        .imageScale(.medium)
                 }
 
                 HStack {

@@ -37,10 +37,36 @@ struct StatisticsView: View {
         return calendar.date(byAdding: components, to: startOfMonth) ?? selectedDate
     }
     
+    // 获取当前选择的周的日期范围
+    private var currentWeekRange: (start: Date, end: Date)? {
+        let calendar = Calendar.current
+        let currentWeekday = calendar.component(.weekday, from: selectedDate)
+        let daysToSubtract = (currentWeekday + 5) % 7 // 计算到周一需要减去的天数
+        
+        guard let weekStart = calendar.date(byAdding: .day, value: -daysToSubtract, to: selectedDate),
+              let weekEnd = calendar.date(byAdding: .day, value: 6, to: weekStart) else {
+            return nil
+        }
+        
+        return (weekStart, weekEnd)
+    }
+    
+    // 修改 monthString 计算属性
     var monthString: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy年M月"
-        return formatter.string(from: selectedDate)
+        if timeRange == .week {
+            guard let weekRange = currentWeekRange else { return "" }
+            
+            let formatter = DateFormatter()
+            formatter.dateFormat = "M月d日"
+            let startString = formatter.string(from: weekRange.start)
+            let endString = formatter.string(from: weekRange.end)
+            
+            return "\(startString)至\(endString)"
+        } else {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy年M月"
+            return formatter.string(from: selectedDate)
+        }
     }
     
     // 获取选中月份的年月
@@ -88,12 +114,11 @@ struct StatisticsView: View {
         let calendar = Calendar.current
         let weekDays = ["一", "二", "三", "四", "五", "六", "日"]
         
-        let today = Date()
-        // 获取本周一的日期
-        let currentWeekday = calendar.component(.weekday, from: today)
+        // 使用 selectedDate 替代 today
+        let currentWeekday = calendar.component(.weekday, from: selectedDate)
         let daysToSubtract = (currentWeekday + 5) % 7 // 计算到本周一需要减去的天数
         
-        guard let weekStart = calendar.date(byAdding: .day, value: -daysToSubtract, to: today),
+        guard let weekStart = calendar.date(byAdding: .day, value: -daysToSubtract, to: selectedDate),
               let weekEnd = calendar.date(byAdding: .day, value: 6, to: weekStart) else {
             print("获取周日期范围失败")
             return weekDays.map { ($0, 0.0) }
@@ -101,11 +126,11 @@ struct StatisticsView: View {
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        print("本周日期范围：\(dateFormatter.string(from: weekStart)) 至 \(dateFormatter.string(from: weekEnd))")
+        print("当前选择周日期范围：\(dateFormatter.string(from: weekStart)) 至 \(dateFormatter.string(from: weekEnd))")
         
         var distribution = Dictionary(uniqueKeysWithValues: weekDays.map { ($0, 0.0) })
         
-        // 过滤本周的记录
+        // 过滤选中周的记录
         let weeklyRecords = allRecords.filter { record in
             guard let date = record.date else {
                 print("记录日期为空")
@@ -122,7 +147,7 @@ struct StatisticsView: View {
             return isInRange
         }
         
-        print("本周符合条件的记录数：\(weeklyRecords.count)")
+        print("选中周符合条件的记录数：\(weeklyRecords.count)")
         
         // 计算每天的时长
         for record in weeklyRecords {
@@ -192,30 +217,49 @@ struct StatisticsView: View {
         return days > 0 ? total / Double(days) : 0
     }
     
-    // 计算环比变化
+    // 计算周环比变化（使用日均时间）
     private var weekOverWeekChange: Double {
-        let lastWeekTotal = lastWeekDistribution.reduce(0.0) { $0 + $1.1 }
-        let thisWeekTotal = weeklyDistribution.reduce(0.0) { $0 + $1.1 }
+        let calendar = Calendar.current
         
-        // 添加调试信息
-        print("上周总时长: \(lastWeekTotal)")
-        print("本周总时长: \(thisWeekTotal)")
+        // 获取上周的日期范围
+        guard let currentWeekRange = currentWeekRange,
+              let lastWeekStart = calendar.date(byAdding: .day, value: -7, to: currentWeekRange.start),
+              let lastWeekEnd = calendar.date(byAdding: .day, value: -7, to: currentWeekRange.end) else {
+            return 0.0
+        }
         
-        // 避免除以零
-        guard lastWeekTotal > 0 else { return 0 }
+        // 过滤上周的记录
+        let lastWeekRecords = allRecords.filter { record in
+            guard let date = record.date else { return false }
+            return date >= lastWeekStart && date <= lastWeekEnd
+        }
         
-        return ((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100
+        // 计算上周的日均时长（小时）
+        let lastWeekDaysWithRecords = Set(lastWeekRecords.compactMap { 
+            Calendar.current.startOfDay(for: $0.wrappedDate)
+        }).count
+        let lastWeekAverage = lastWeekDaysWithRecords > 0 ? 
+            Double(lastWeekRecords.reduce(0) { $0 + Int($1.duration) }) / Double(lastWeekDaysWithRecords) / 60.0 : 0.0
+        
+        // 避免除以零，并处理特殊情况
+        if lastWeekAverage == 0 {
+            return currentWeekAverage > 0 ? 100.0 : 0.0
+        }
+        
+        return ((currentWeekAverage - lastWeekAverage) / lastWeekAverage) * 100.0
     }
     
-    // 月环比变化率
+    // 月环比变化（使用日均时间）
     private var monthOverMonthChange: Double {
-        // 获取上个月的记录
         let calendar = Calendar.current
-        guard let lastMonthDate = calendar.date(byAdding: .month, value: -1, to: selectedDate) else { return 0 }
         
-        // 获取上个月的起始和结束日期
-        let lastMonthStart = calendar.startOfMonth(for: lastMonthDate)
-        let lastMonthEnd = calendar.endOfMonth(for: lastMonthDate)
+        // 获取上个月的日期范围
+        guard let lastMonthDate = calendar.date(byAdding: .month, value: -1, to: selectedDate),
+              let lastMonthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: lastMonthDate)),
+              var lastMonthEnd = calendar.date(byAdding: .month, value: 1, to: lastMonthStart) else {
+            return 0.0
+        }
+        lastMonthEnd = calendar.date(byAdding: .day, value: -1, to: lastMonthEnd) ?? lastMonthEnd
         
         // 过滤上个月的记录
         let lastMonthRecords = allRecords.filter { record in
@@ -223,15 +267,19 @@ struct StatisticsView: View {
             return date >= lastMonthStart && date <= lastMonthEnd
         }
         
-        // 计算上个月的总时长（小时）
-        let lastMonthTotal = Double(lastMonthRecords.reduce(0) { $0 + Int($1.duration) }) / 60.0
+        // 计算上个月的日均时长（小时）
+        let lastMonthDaysWithRecords = Set(lastMonthRecords.compactMap { 
+            Calendar.current.startOfDay(for: $0.wrappedDate)
+        }).count
+        let lastMonthAverage = lastMonthDaysWithRecords > 0 ? 
+            Double(lastMonthRecords.reduce(0) { $0 + Int($1.duration) }) / Double(lastMonthDaysWithRecords) / 60.0 : 0.0
         
         // 避免除以零，并处理特殊情况
-        if lastMonthTotal == 0 {
-            return monthlyTotalHours > 0 ? 100.0 : 0.0
+        if lastMonthAverage == 0 {
+            return monthlyAverageHours > 0 ? 100.0 : 0.0
         }
         
-        return ((monthlyTotalHours - lastMonthTotal) / lastMonthTotal) * 100.0
+        return ((monthlyAverageHours - lastMonthAverage) / lastMonthAverage) * 100.0
     }
     
     private let intensityLegends = [
@@ -241,6 +289,30 @@ struct StatisticsView: View {
         (level: 4, opacity: 0.93),
         (level: 5, opacity: 1.0)
     ]
+    
+    // 判断是否为本周/本月
+    private var isCurrentPeriod: Bool {
+        let calendar = Calendar.current
+        let today = Date()
+        
+        if timeRange == .week {
+            // 判断是否为本周
+            let currentWeekOfYear = calendar.component(.weekOfYear, from: today)
+            let selectedWeekOfYear = calendar.component(.weekOfYear, from: selectedDate)
+            let currentYear = calendar.component(.year, from: today)
+            let selectedYear = calendar.component(.year, from: selectedDate)
+            
+            return currentYear == selectedYear && currentWeekOfYear == selectedWeekOfYear
+        } else {
+            // 判断是否为本月
+            let currentMonth = calendar.component(.month, from: today)
+            let selectedMonth = calendar.component(.month, from: selectedDate)
+            let currentYear = calendar.component(.year, from: today)
+            let selectedYear = calendar.component(.year, from: selectedDate)
+            
+            return currentYear == selectedYear && currentMonth == selectedMonth
+        }
+    }
     
     var body: some View {
         ScrollView {
@@ -272,9 +344,9 @@ struct StatisticsView: View {
                         // 左侧统计信息
                         VStack(alignment: .leading, spacing: 8) {
                             HStack(spacing: 8) {
-                                Text(timeRange == .week ? "本周打球" : "本月打球")
-                                    .foregroundColor(.secondary)
-                                    .font(.subheadline)
+//                                Text(timeRange == .week ? "本周打球" : "本月打球")
+//                                    .foregroundColor(.secondary)
+//                                    .font(.subheadline)
                                 
                                 Text("\(String(format: "%.1f", timeRange == .week ? totalWeeklyHours : monthlyTotalHours))小时")
                                     .foregroundColor(.themeColor)
@@ -290,18 +362,20 @@ struct StatisticsView: View {
                                 Text("小时")
                                     .foregroundColor(.secondary)
                                 
-                                // 环比数据
-                                HStack(spacing: 4) {
-                                    Text(timeRange == .week ? "比上周" : "比上月")
+                                // 仅在本周/本月时显示环比数据
+                                if isCurrentPeriod {
+                                    HStack(spacing: 4) {
+                                        Text(timeRange == .week ? "比上周" : "比上月")
+                                            .foregroundColor(.secondary)
+                                        Image(systemName: 
+                                            (timeRange == .week ? weekOverWeekChange : monthOverMonthChange) >= 0 ? 
+                                            "arrow.up" : "arrow.down"
+                                        )
                                         .foregroundColor(.secondary)
-                                    Image(systemName: 
-                                        (timeRange == .week ? weekOverWeekChange : monthOverMonthChange) >= 0 ? 
-                                        "arrow.up" : "arrow.down"
-                                    )
-                                    .foregroundColor(.secondary)
-                                    Text("\(abs(Int(timeRange == .week ? weekOverWeekChange : monthOverMonthChange)))%")
-                                        .foregroundColor(.secondary)
-                                        .fontWeight(.medium)
+                                        Text("\(abs(Int(timeRange == .week ? weekOverWeekChange : monthOverMonthChange)))%")
+                                            .foregroundColor(.secondary)
+                                            .fontWeight(.medium)
+                                    }
                                 }
                             }
                             .font(.subheadline)
@@ -331,6 +405,10 @@ struct StatisticsView: View {
                                 ForEach([TimeRange.week, TimeRange.month], id: \.self) { range in
                                     Button {
                                         withAnimation {
+                                            if range == .week {
+                                                // 切换到周视图时，设置为本周
+                                                selectedDate = Date()
+                                            }
                                             timeRange = range
                                             showPopover = false
                                         }
@@ -356,7 +434,7 @@ struct StatisticsView: View {
                     
                     // 周时长分布图
                     if timeRange == .week {
-                        WeeklyDistributionChart(data: weeklyDistribution, records: allRecords)
+                        WeeklyDistributionChart(data: weeklyDistribution, records: allRecords, selectedDate: selectedDate)
                             .frame(height: 200)
                     } else {
                         MonthlyDistributionChart(records: filteredRecords, selectedDate: selectedDate)
@@ -445,18 +523,49 @@ struct StatisticsView: View {
     
     private func previousMonth() {
         withAnimation {
-            if let newDate = Calendar.current.date(byAdding: .month, value: -1, to: selectedDate) {
-                selectedDate = newDate
-                print("切换到上个月: \(monthString)")
+            if timeRange == .week {
+                // 切换到上一周
+                if let newDate = Calendar.current.date(byAdding: .day, value: -7, to: selectedDate) {
+                    selectedDate = newDate
+                    print("切换到上周: \(monthString)")
+                }
+            } else {
+                // 切换到上个月
+                if let newDate = Calendar.current.date(byAdding: .month, value: -1, to: selectedDate) {
+                    selectedDate = newDate
+                    print("切换到上个月: \(monthString)")
+                }
             }
         }
     }
     
     private func nextMonth() {
         withAnimation {
-            if let newDate = Calendar.current.date(byAdding: .month, value: 1, to: selectedDate) {
-                selectedDate = newDate
-                print("切换到下个月: \(monthString)")
+            if timeRange == .week {
+                // 切换到下一周
+                if let newDate = Calendar.current.date(byAdding: .day, value: 7, to: selectedDate) {
+                    // 不允许选择超过当前日期的周
+                    if newDate <= Date() {
+                        selectedDate = newDate
+                        print("切换到下周: \(monthString)")
+                    }
+                }
+            } else {
+                // 切换到下个月
+                if let newDate = Calendar.current.date(byAdding: .month, value: 1, to: selectedDate) {
+                    // 不允许选择超过当前月份
+                    let today = Date()
+                    let calendar = Calendar.current
+                    let currentYear = calendar.component(.year, from: today)
+                    let currentMonth = calendar.component(.month, from: today)
+                    let newYear = calendar.component(.year, from: newDate)
+                    let newMonth = calendar.component(.month, from: newDate)
+                    
+                    if newYear < currentYear || (newYear == currentYear && newMonth <= currentMonth) {
+                        selectedDate = newDate
+                        print("切换到下个月: \(monthString)")
+                    }
+                }
             }
         }
     }
@@ -491,7 +600,8 @@ struct WeeklyDistributionChart: View {
     let data: [(String, Double)]
     let records: [BasketballRecord]
     let calendar = Calendar.current
-    @State private var selectedDay: String? // 选中的星期
+    let selectedDate: Date
+    @State private var selectedDay: String?
     
     // 添加最大值计算
     private var maxValue: Double {
@@ -499,16 +609,16 @@ struct WeeklyDistributionChart: View {
         return ceil(max) // 直接对最大时长向上取整
     }
     
-    // 获取某天的平均强度，使用与日历视图相同的逻辑
+    // 获取某天的平均强度，使用选中周的日期
     private func getAverageIntensity(for dayName: String) -> Int {
         let weekDays = ["一", "二", "三", "四", "五", "六", "日"]
         guard let dayIndex = weekDays.firstIndex(of: dayName) else { return 0 }
         
-        let today = Date()
-        let currentWeekday = calendar.component(.weekday, from: today)
+        // 使用 selectedDate 计算选中周的日期范围
+        let currentWeekday = calendar.component(.weekday, from: selectedDate)
         let daysToSubtract = (currentWeekday + 5) % 7
         
-        guard let weekStart = calendar.date(byAdding: .day, value: -daysToSubtract, to: today),
+        guard let weekStart = calendar.date(byAdding: .day, value: -daysToSubtract, to: selectedDate),
               let targetDate = calendar.date(byAdding: .day, value: dayIndex, to: weekStart) else {
             return 0
         }
@@ -522,16 +632,16 @@ struct WeeklyDistributionChart: View {
         return dayRecords.isEmpty ? 0 : totalIntensity / dayRecords.count
     }
     
-    // 获取某天的所有记录
+    // 获取某天的所有记录，使用选中周的日期
     private func getDayRecords(for dayName: String) -> [BasketballRecord] {
         let weekDays = ["一", "二", "三", "四", "五", "六", "日"]
         guard let dayIndex = weekDays.firstIndex(of: dayName) else { return [] }
         
-        let today = Date()
-        let currentWeekday = calendar.component(.weekday, from: today)
+        // 使用 selectedDate 计算选中周的日期范围
+        let currentWeekday = calendar.component(.weekday, from: selectedDate)
         let daysToSubtract = (currentWeekday + 5) % 7
         
-        guard let weekStart = calendar.date(byAdding: .day, value: -daysToSubtract, to: today),
+        guard let weekStart = calendar.date(byAdding: .day, value: -daysToSubtract, to: selectedDate),
               let targetDate = calendar.date(byAdding: .day, value: dayIndex, to: weekStart) else {
             return []
         }
