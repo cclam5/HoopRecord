@@ -126,8 +126,9 @@ struct NewRecordView: View {
             }
             
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: {
-                    saveRecord()
+                Button(action: { 
+                    HapticManager.success()  // 添加触感反馈
+                    saveRecord() 
                 }) {
                     Image(systemName: "checkmark")
                         .font(.system(size: 13))

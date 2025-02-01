@@ -235,17 +235,20 @@ struct StatisticsView: View {
         }
         
         // 计算上周的日均时长（小时）
-        let lastWeekDaysWithRecords = Set(lastWeekRecords.compactMap { 
-            Calendar.current.startOfDay(for: $0.wrappedDate)
-        }).count
-        let lastWeekAverage = lastWeekDaysWithRecords > 0 ? 
-            Double(lastWeekRecords.reduce(0) { $0 + Int($1.duration) }) / Double(lastWeekDaysWithRecords) / 60.0 : 0.0
+        let lastWeekTotalHours = Double(lastWeekRecords.reduce(0) { $0 + Int($1.duration) }) / 60.0
+        let lastWeekAverage = lastWeekTotalHours / 7.0  // 固定除以7天
         
-        // 避免除以零，并处理特殊情况
+        // 如果上周没有数据，且本周有数据，返回100%
         if lastWeekAverage == 0 {
             return currentWeekAverage > 0 ? 100.0 : 0.0
         }
         
+        // 如果本周没有数据，且上周有数据，返回-100%
+        if currentWeekAverage == 0 {
+            return lastWeekAverage > 0 ? -100.0 : 0.0
+        }
+        
+        // 如果都有数据，正常计算环比变化
         return ((currentWeekAverage - lastWeekAverage) / lastWeekAverage) * 100.0
     }
     
@@ -268,17 +271,21 @@ struct StatisticsView: View {
         }
         
         // 计算上个月的日均时长（小时）
-        let lastMonthDaysWithRecords = Set(lastMonthRecords.compactMap { 
-            Calendar.current.startOfDay(for: $0.wrappedDate)
-        }).count
-        let lastMonthAverage = lastMonthDaysWithRecords > 0 ? 
-            Double(lastMonthRecords.reduce(0) { $0 + Int($1.duration) }) / Double(lastMonthDaysWithRecords) / 60.0 : 0.0
+        let lastMonthTotalHours = Double(lastMonthRecords.reduce(0) { $0 + Int($1.duration) }) / 60.0
+        let daysInLastMonth = calendar.range(of: .day, in: .month, for: lastMonthDate)?.count ?? 30
+        let lastMonthAverage = lastMonthTotalHours / Double(daysInLastMonth)
         
-        // 避免除以零，并处理特殊情况
+        // 如果上月没有数据，且本月有数据，返回100%
         if lastMonthAverage == 0 {
             return monthlyAverageHours > 0 ? 100.0 : 0.0
         }
         
+        // 如果本月没有数据，且上月有数据，返回-100%
+        if monthlyAverageHours == 0 {
+            return lastMonthAverage > 0 ? -100.0 : 0.0
+        }
+        
+        // 如果都有数据，正常计算环比变化
         return ((monthlyAverageHours - lastMonthAverage) / lastMonthAverage) * 100.0
     }
     
@@ -582,16 +589,14 @@ struct StatisticsView: View {
     
     // 本月日均时长（小时）
     private var monthlyAverageHours: Double {
-        let daysWithRecords = Set(filteredRecords.compactMap { 
-            Calendar.current.startOfDay(for: $0.wrappedDate)
-        }).count
-        return daysWithRecords > 0 ? monthlyTotalHours / Double(daysWithRecords) : 0
+        let calendar = Calendar.current
+        let daysInMonth = calendar.range(of: .day, in: .month, for: selectedDate)?.count ?? 30
+        return monthlyTotalHours / Double(daysInMonth)
     }
     
     // 本周日均时长（小时）
     private var currentWeekAverage: Double {
-        let daysWithRecords = weeklyDistribution.filter { $0.1 > 0 }.count
-        return daysWithRecords > 0 ? totalWeeklyHours / Double(daysWithRecords) : 0
+        return totalWeeklyHours / 7.0  // 固定除以7天
     }
 }
 

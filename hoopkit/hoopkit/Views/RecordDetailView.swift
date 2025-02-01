@@ -129,15 +129,17 @@ struct RecordDetailView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
                         if isEditing {
+                            HapticManager.success()  // 添加成功触感
                             saveChanges()
                         }
                         isEditing.toggle()
+                        HapticManager.impact(style: .medium)  // 添加触感
                     }) {
                         Image(systemName: isEditing ? "checkmark" : "square.and.pencil")
-                            .font(.system(size: 13))  // 设置图标大小
+                            .font(.system(size: 13))
                             .foregroundColor(.themeColor)
-                            .padding(.horizontal, 6)  // 减小内边距
-                            .padding(.vertical, 3)    // 减小内边距
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 3)
                             .background(Color.themeColor.opacity(0.1))
                             .cornerRadius(6)
                     }
