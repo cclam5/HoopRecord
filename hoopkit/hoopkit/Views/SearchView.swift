@@ -4,6 +4,7 @@ import CoreData
 struct SearchView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var themeManager: ThemeManager
     @State private var searchText = ""
     @FocusState private var isSearchFocused: Bool
     @State private var searchHistory: [String] = []  // 改为 State
@@ -43,18 +44,19 @@ struct SearchView: View {
             HStack(spacing: 12) {
                 Button(action: { dismiss() }) {
                     Image(systemName: "chevron.left")
-                        .foregroundColor(.themeColor)
+                        .foregroundColor(.customBrandPrimary)
                         .imageScale(.medium)
                 }
 
                 HStack {
                     Image(systemName: "magnifyingglass")
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.customSecondaryText)
                         .font(.system(size: 14))
                     
                     TextField("搜索", text: $searchText)
                         .textFieldStyle(PlainTextFieldStyle())
                         .font(.system(size: 14))
+                        .foregroundColor(.customPrimaryText)
                         .focused($isSearchFocused)
                         .onSubmit {
                             addSearchHistory(searchText)
@@ -63,19 +65,20 @@ struct SearchView: View {
                     if !searchText.isEmpty {
                         Button(action: { searchText = "" }) {
                             Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.customSecondaryText)
                                 .font(.system(size: 14))
                         }
                     }
                 }
                 .padding(.vertical, 6)
                 .padding(.horizontal, 10)
-                .background(Color(red: 0.98, green: 0.96, blue: 0.94))
+                .background(Color.customListBackground)
                 .cornerRadius(14)
                 .frame(height: 32)
             }
             .padding(.horizontal)
-            .padding(.top, 8)  // 只保留顶部间距
+            .padding(.top, 8)
+            .background(Color.customBackground)
             
             if searchText.isEmpty {
                 if !searchHistory.isEmpty {
@@ -83,7 +86,7 @@ struct SearchView: View {
                         HStack {
                             Text("最近搜索")
                                 .font(.subheadline)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.customSecondaryText)
                             
                             Spacer()
                             
@@ -92,12 +95,12 @@ struct SearchView: View {
                                 saveSearchHistory()
                             }) {
                                 Image(systemName: "trash")
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(.customSecondaryText)
                                     .imageScale(.small)
                             }
                         }
                         .padding(.horizontal)
-                        .padding(.top, 12)  // 添加小的顶部间距
+                        .padding(.top, 12)
                         
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 8) {
@@ -108,30 +111,31 @@ struct SearchView: View {
                                     }) {
                                         Text(history)
                                             .font(.subheadline)
-                                            .foregroundColor(.primary)
+                                            .foregroundColor(.customPrimaryText)
                                             .padding(.horizontal, 12)
                                             .padding(.vertical, 6)
-                                            .background(Color(red: 0.98, green: 0.96, blue: 0.94))
+                                            .background(Color.customListBackground)
                                             .cornerRadius(16)
                                     }
                                 }
                             }
                             .padding(.horizontal)
-                            .padding(.top, 8)  // 添加小的顶部间距
+                            .padding(.top, 8)
                         }
                     }
                 }
-                Spacer()  // 将空白区域移到这里
+                Spacer()
             } else {
                 SearchResultList(searchText: searchText)
             }
         }
         .navigationBarHidden(true)
-        .background(Color.white)
+        .background(Color.customBackground)
         .onAppear {
             isSearchFocused = true
             loadSearchHistory()
         }
+        .preferredColorScheme(themeManager.currentTheme.colorScheme)
     }
 }
 
@@ -158,13 +162,13 @@ struct SearchResultList: View {
                 }
             }
             .padding(.top, 12)
-            .padding(.horizontal, 14)  // 减小水平内边距
+            .padding(.horizontal, 14)
         }
-        .background(Color.white)
+        .background(Color.customBackground)
         .overlay {
             if records.isEmpty {
                 Text("未找到相关记录")
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.customSecondaryText)
             }
         }
     }

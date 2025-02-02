@@ -4,6 +4,7 @@ import CoreData
 struct NewRecordView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var themeManager: ThemeManager
     
     // 将 gameTypes 移到外部
     private let gameTypes = ["个人训练", "队内训练", "1v1", "2v2", "3v3", "4v4", "5v5"]
@@ -44,18 +45,20 @@ struct NewRecordView: View {
                     .padding(.horizontal)
                     .padding(.vertical, ViewStyles.smallPadding)
             }
-            .background(Color(.systemBackground))
+            .background(Color.customBackground)
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text("新记录")
                         .font(.headline)
+                        .foregroundColor(.customPrimaryText)
                 }
                 toolbarContent
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
+        .preferredColorScheme(themeManager.currentTheme.colorScheme)
         .interactiveDismissDisabled(hasUnsavedContent)
         .alert("放弃编辑", isPresented: $showingDiscardAlert) {
             Button("继续编辑", role: .cancel) { }
@@ -72,6 +75,7 @@ struct NewRecordView: View {
             typeAndIntensityView
             durationView
             Divider()
+                .background(Color.customListBackground)
             notesView
         }
         .padding()
@@ -80,27 +84,34 @@ struct NewRecordView: View {
     private var typeAndIntensityView: some View {
         HStack {
             GameTypeSelector(gameTypes: gameTypes, selectedType: $gameType)
+            
             Spacer()
+            
             IntensityControl(intensity: $intensity)
         }
     }
     
     private var durationView: some View {
-        DurationSelector(duration: $duration, presets: durationPresets)
+        DurationSelector(
+            duration: $duration,
+            presets: durationPresets,
+            isEditing: true
+        )
+        .foregroundColor(.customPrimaryText)
     }
     
     private var notesView: some View {
         NotesEditor(notes: $notes)
+            .foregroundColor(.customPrimaryText)
     }
     
     private var tagInputView: some View {
-        VStack(alignment: .leading) {
-            TagInput(
-                newTagName: $newTagName,
-                selectedTags: $selectedTags,
-                onSubmit: addTagIfNeeded
-            )
-        }
+        TagInput(
+            newTagName: $newTagName,
+            selectedTags: $selectedTags,
+            onSubmit: addTagIfNeeded
+        )
+        .foregroundColor(.customPrimaryText)
     }
     
     // MARK: - 工具栏
@@ -117,25 +128,25 @@ struct NewRecordView: View {
                 }) {
                     Image(systemName: "xmark")
                         .font(.system(size: 13))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.customSecondaryText)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 3)
-                        .background(Color.secondary.opacity(0.1))
+                        .background(Color.customListBackground)
                         .cornerRadius(6)
                 }
             }
             
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: { 
-                    HapticManager.success()  // 添加触感反馈
+                    HapticManager.success()
                     saveRecord() 
                 }) {
                     Image(systemName: "checkmark")
                         .font(.system(size: 13))
-                        .foregroundColor(.themeColor)
+                        .foregroundColor(.customBrandPrimary)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 3)
-                        .background(Color.themeColor.opacity(0.1))
+                        .background(Color.customBrandPrimary.opacity(0.1))
                         .cornerRadius(6)
                 }
             }

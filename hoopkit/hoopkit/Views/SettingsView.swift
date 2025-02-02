@@ -2,8 +2,8 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var themeManager = ThemeManager.shared
     @AppStorage("language") private var language = "zh" // 默认中文
-    @AppStorage("theme") private var theme = "system" // 默认跟随系统
     @State private var showingLanguagePicker = false
     @State private var showingThemePicker = false
     @State private var showingUserAgreement = false
@@ -18,28 +18,33 @@ struct SettingsView: View {
                     Button(action: { showingLanguagePicker = true }) {
                         HStack {
                             Text("语言选择")
+                                .foregroundColor(.customPrimaryText)
                             Spacer()
                             Text(language == "zh" ? "中文" : "English")
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.customSecondaryText)
                             Image(systemName: "chevron.right")
                                 .font(.system(size: 13))
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.customSecondaryText)
                         }
                     }
+                    .listRowBackground(Color.customListBackground)
                     
                     Button(action: { showingThemePicker = true }) {
                         HStack {
                             Text("主题外观")
+                                .foregroundColor(.customPrimaryText)
                             Spacer()
                             Text(themeText)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.customSecondaryText)
                             Image(systemName: "chevron.right")
                                 .font(.system(size: 13))
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.customSecondaryText)
                         }
                     }
+                    .listRowBackground(Color.customListBackground)
                 } header: {
                     Text("偏好设置")
+                        .foregroundColor(.customSecondaryText)
                 }
                 
                 // 关于
@@ -47,34 +52,41 @@ struct SettingsView: View {
                     Button(action: { showingUserAgreement = true }) {
                         HStack {
                             Text("用户协议")
+                                .foregroundColor(.customPrimaryText)
                             Spacer()
                             Image(systemName: "chevron.right")
                                 .font(.system(size: 13))
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.customSecondaryText)
                         }
                     }
+                    .listRowBackground(Color.customListBackground)
                     
                     Button(action: { showingPrivacyPolicy = true }) {
                         HStack {
                             Text("隐私政策")
+                                .foregroundColor(.customPrimaryText)
                             Spacer()
                             Image(systemName: "chevron.right")
                                 .font(.system(size: 13))
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.customSecondaryText)
                         }
                     }
+                    .listRowBackground(Color.customListBackground)
                     
                     Button(action: { showingAboutUs = true }) {
                         HStack {
                             Text("关于我们")
+                                .foregroundColor(.customPrimaryText)
                             Spacer()
                             Image(systemName: "chevron.right")
                                 .font(.system(size: 13))
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.customSecondaryText)
                         }
                     }
+                    .listRowBackground(Color.customListBackground)
                 } header: {
                     Text("关于")
+                        .foregroundColor(.customSecondaryText)
                 }
                 
                 // 分享与反馈
@@ -82,44 +94,53 @@ struct SettingsView: View {
                     Button(action: shareApp) {
                         HStack {
                             Text("分享给好友")
+                                .foregroundColor(.customPrimaryText)
                             Spacer()
                             Image(systemName: "square.and.arrow.up")
                                 .font(.system(size: 13))
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.customSecondaryText)
                         }
                     }
+                    .listRowBackground(Color.customListBackground)
                     
                     Button(action: rateApp) {
                         HStack {
                             Text("给应用评分")
+                                .foregroundColor(.customPrimaryText)
                             Spacer()
                             Image(systemName: "star")
                                 .font(.system(size: 13))
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.customSecondaryText)
                         }
                     }
+                    .listRowBackground(Color.customListBackground)
                     
                     Button(action: sendFeedback) {
                         HStack {
                             Text("反馈与建议")
+                                .foregroundColor(.customPrimaryText)
                             Spacer()
                             Image(systemName: "envelope")
                                 .font(.system(size: 13))
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.customSecondaryText)
                         }
                     }
+                    .listRowBackground(Color.customListBackground)
                 } header: {
                     Text("分享与反馈")
+                        .foregroundColor(.customSecondaryText)
                 }
                 
                 // 版本信息
                 Section {
                     HStack {
                         Text("版本")
+                            .foregroundColor(.customPrimaryText)
                         Spacer()
                         Text("1.0.0")
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.customSecondaryText)
                     }
+                    .listRowBackground(Color.customListBackground)
                 }
             }
             .navigationTitle("设置")
@@ -128,20 +149,31 @@ struct SettingsView: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "chevron.left")
-                            .foregroundColor(.themeColor)
+                            .foregroundColor(.customBrandPrimary)
+                            .imageScale(.medium)
                     }
                 }
             }
+            .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            .background(Color.customBackground)
         }
+        .preferredColorScheme(themeManager.currentTheme.colorScheme)
         .confirmationDialog("选择语言", isPresented: $showingLanguagePicker) {
             Button("中文") { language = "zh" }
             Button("English") { language = "en" }
             Button("取消", role: .cancel) { }
         }
         .confirmationDialog("选择主题", isPresented: $showingThemePicker) {
-            Button("浅色") { theme = "light" }
-            Button("深色") { theme = "dark" }
-            Button("跟随系统") { theme = "system" }
+            Button("浅色") { 
+                themeManager.currentTheme = .light
+            }
+            Button("深色") { 
+                themeManager.currentTheme = .dark
+            }
+            Button("跟随系统") { 
+                themeManager.currentTheme = .system
+            }
             Button("取消", role: .cancel) { }
         }
         .sheet(isPresented: $showingUserAgreement) {
@@ -156,10 +188,10 @@ struct SettingsView: View {
     }
     
     private var themeText: String {
-        switch theme {
-        case "light": return "浅色"
-        case "dark": return "深色"
-        default: return "跟随系统"
+        switch themeManager.currentTheme {
+        case .light: return "浅色"
+        case .dark: return "深色"
+        case .system: return "跟随系统"
         }
     }
     
@@ -195,6 +227,7 @@ struct SettingsView: View {
 // 用户协议视图
 struct UserAgreementView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var themeManager: ThemeManager
     
     var body: some View {
         NavigationView {
@@ -213,12 +246,14 @@ struct UserAgreementView: View {
                 }
             }
         }
+        .preferredColorScheme(themeManager.currentTheme.colorScheme)
     }
 }
 
 // 隐私政策视图
 struct PrivacyPolicyView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var themeManager: ThemeManager
     
     var body: some View {
         NavigationView {
@@ -237,12 +272,14 @@ struct PrivacyPolicyView: View {
                 }
             }
         }
+        .preferredColorScheme(themeManager.currentTheme.colorScheme)
     }
 }
 
 // 关于我们视图
 struct AboutUsView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var themeManager: ThemeManager
     
     var body: some View {
         NavigationView {
@@ -278,6 +315,7 @@ struct AboutUsView: View {
                 }
             }
         }
+        .preferredColorScheme(themeManager.currentTheme.colorScheme)
     }
 }
 

@@ -1,4 +1,8 @@
 import SwiftUI
+import CoreData
+
+// 导入触感管理器
+@_implementationOnly import UIKit
 
 // 类型选择组件
 struct GameTypeSelector: View {
@@ -9,17 +13,17 @@ struct GameTypeSelector: View {
         HStack {
             Text("类型")
                 .font(ViewStyles.labelFont)
-                .foregroundColor(ViewStyles.labelColor)
+                .foregroundColor(.customSecondaryText)
             
             Menu {
                 ForEach(gameTypes, id: \.self) { type in
                     Button(action: { selectedType = type }) {
                         HStack {
                             Text(type)
-                                .foregroundColor(.primary)
+                                .foregroundColor(.customPrimaryText)
                             if selectedType == type {
                                 Image(systemName: "checkmark")
-                                    .foregroundColor(.primary)
+                                    .foregroundColor(.customBrandPrimary)
                             }
                         }
                     }
@@ -28,14 +32,14 @@ struct GameTypeSelector: View {
                 HStack {
                     Text(selectedType)
                         .font(ViewStyles.labelFont)
-                        .foregroundColor(.primary)
+                        .foregroundColor(.customPrimaryText)
                     Image(systemName: "chevron.down")
-                        .font(ViewStyles.labelFont)
-                        .foregroundColor(.primary)
+                        .font(.system(size: 13))
+                        .foregroundColor(.customSecondaryText)
                 }
                 .padding(.horizontal, ViewStyles.defaultPadding)
                 .padding(.vertical, ViewStyles.smallPadding)
-                .background(ViewStyles.backgroundColor)
+                .background(Color.customListBackground)
                 .cornerRadius(ViewStyles.cornerRadius)
             }
         }
@@ -45,21 +49,33 @@ struct GameTypeSelector: View {
 // 强度控制组件
 struct IntensityControl: View {
     @Binding var intensity: Int
+    var isEditing: Bool = true  // 添加编辑状态参数，默认为可编辑
     
     var body: some View {
         HStack {
             Text("强度")
                 .font(ViewStyles.labelFont)
-                .foregroundColor(ViewStyles.labelColor)
+                .foregroundColor(.customSecondaryText)
+            
             HStack(spacing: ViewStyles.tinyPadding) {
                 ForEach(1...5, id: \.self) { index in
-                    Button(action: { intensity = index }) {
+                    if isEditing {
+                        Button(action: { intensity = index }) {
+                            Image(systemName: index <= intensity ? "flame.fill" : "flame")
+                                .font(ViewStyles.labelFont)
+                                .foregroundColor(index <= intensity ? .customBrandPrimary : .customSecondaryText)
+                        }
+                    } else {
                         Image(systemName: index <= intensity ? "flame.fill" : "flame")
                             .font(ViewStyles.labelFont)
-                            .foregroundColor(index <= intensity ? .themeColor : .gray)
+                            .foregroundColor(index <= intensity ? .customBrandPrimary : .customSecondaryText)
                     }
                 }
             }
+            .padding(.horizontal, ViewStyles.defaultPadding)
+            .padding(.vertical, ViewStyles.smallPadding)
+            .background(isEditing ? Color.customListBackground : Color.clear)
+            .cornerRadius(ViewStyles.cornerRadius)
         }
     }
 }
@@ -75,28 +91,34 @@ struct DurationSelector: View {
             HStack {
                 Text("时长")
                     .font(ViewStyles.labelFont)
-                    .foregroundColor(ViewStyles.labelColor)
+                    .foregroundColor(.customSecondaryText)
                 Spacer()
                 Text("\(Int(duration))分钟")
                     .font(ViewStyles.labelFont)
-                    .foregroundColor(ViewStyles.labelColor)
+                    .foregroundColor(.customPrimaryText)
             }
             
             if isEditing {
                 Slider(value: $duration, in: 0...240, step: 1)
-                    .accentColor(.themeColor)
+                    .accentColor(.customBrandPrimary)
+                    .onChange(of: duration) { _ in
+                        HapticManager.light()
+                    }
                 
                 HStack(spacing: ViewStyles.smallPadding) {
                     ForEach(presets, id: \.self) { mins in
-                        Button(action: { duration = Double(mins) }) {
+                        Button(action: { 
+                            duration = Double(mins)
+                            HapticManager.light()
+                        }) {
                             Text("\(mins)")
                                 .font(ViewStyles.smallFont)
                                 .padding(.horizontal, ViewStyles.defaultPadding)
                                 .padding(.vertical, ViewStyles.smallPadding)
                                 .background(duration == Double(mins) ? 
-                                    Color.themeColor : 
-                                    ViewStyles.backgroundColor)
-                                .foregroundColor(duration == Double(mins) ? .white : .themeColor)
+                                    Color.customBrandPrimary : 
+                                    Color.customListBackground)
+                                .foregroundColor(duration == Double(mins) ? .white : .customPrimaryText)
                                 .cornerRadius(ViewStyles.cornerRadius)
                         }
                     }

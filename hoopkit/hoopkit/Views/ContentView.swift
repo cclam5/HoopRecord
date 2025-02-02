@@ -12,6 +12,7 @@ struct CompactMenu: MenuStyle {
 
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
+    @EnvironmentObject private var themeManager: ThemeManager
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \BasketballRecord.date, ascending: false)],
         animation: .default)
@@ -36,7 +37,7 @@ struct ContentView: View {
                     mainContentView
                 }
                 .navigationBarHidden(true)
-                .background(Color.white)
+                .background(Color.customBackground)
             }
             
             if showingNewRecord || showingDetail {
@@ -47,6 +48,7 @@ struct ContentView: View {
                     .animation(.easeOut(duration: 0.15), value: showingNewRecord || showingDetail)
             }
         }
+        .preferredColorScheme(themeManager.currentTheme.colorScheme)
         .sheet(isPresented: $showingNewRecord) {
             NewRecordView()
                 .transition(.move(edge: .bottom))
@@ -73,16 +75,16 @@ struct ContentView: View {
                 HStack {
                     NavigationLink(destination: StatisticsView().navigationBarBackButtonHidden(true)) {
                         Image(systemName: "chart.bar.fill")
-                            .foregroundColor(.themeColor)
+                            .foregroundColor(.customBrandPrimary)
                             .imageScale(.medium)
                     }
                     Spacer()
                 }
-                .padding(.leading, 8)  // 减小左侧内边距
+                .padding(.leading, 8)
                 
-                // 中间的 BallIcon，保证在屏幕正中间
+                // 中间的 BallIcon
                 Image("ballIcon")
-                    .foregroundColor(.themeColor)
+                    .foregroundColor(.customBrandPrimary)
                     .imageScale(.medium)
                     .rotationEffect(.degrees(90))
                 
@@ -91,49 +93,61 @@ struct ContentView: View {
                     Spacer()
                     HStack(spacing: 16) {
                         Menu {
-                            Button(action: { showingSettings = true }) {
+                            Button(action: {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    showingSettings = true
+                                }
+                            }) {
                                 HStack(spacing: 4) {
                                     Image(systemName: "gearshape")
                                         .imageScale(.small)
+                                        .foregroundColor(.customPrimaryText)
                                     Text("设置")
                                         .font(.system(size: 12))
+                                        .foregroundColor(.customPrimaryText)
                                 }
                             }
-                            Button(action: { showingHelpCenter = true }) {
+                            Button(action: {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    showingHelpCenter = true
+                                }
+                            }) {
                                 HStack(spacing: 4) {
                                     Image(systemName: "questionmark.circle")
                                         .imageScale(.small)
+                                        .foregroundColor(.customPrimaryText)
                                     Text("帮助")
                                         .font(.system(size: 12))
+                                        .foregroundColor(.customPrimaryText)
                                 }
                             }
                         } label: {
                             Image(systemName: "ellipsis")
-                                .foregroundColor(.themeColor)
+                                .foregroundColor(.customBrandPrimary)
                                 .imageScale(.medium)
                         }
-                        .menuStyle(CompactMenu())  // 应用自定义菜单样式
+                        .menuStyle(CompactMenu())
                         
                         NavigationLink(destination: SearchView().navigationBarBackButtonHidden(true)) {
                             Image(systemName: "magnifyingglass")
-                                .foregroundColor(.themeColor)
+                                .foregroundColor(.customBrandPrimary)
                                 .imageScale(.medium)
                         }
                     }
                 }
-                .padding(.trailing, 8)  // 减小右侧内边距
+                .padding(.trailing, 8)
             }
             .frame(width: geometry.size.width)
         }
         .frame(height: 40)
-        .padding(.horizontal, 8)  // 减小整体水平内边距
-        .background(Color(.systemBackground))
+        .padding(.horizontal, 8)
+        .background(Color.customCardBackground)
         .shadow(color: Color.black.opacity(0.05), radius: 1, y: 1)
     }
     
     private var mainContentView: some View {
         ZStack {
-            Color.white.ignoresSafeArea()
+            Color.customBackground.ignoresSafeArea()
             
             GeometryReader { geometry in
                 recordListView(geometry: geometry)
@@ -181,11 +195,11 @@ struct ContentView: View {
         Button(action: { showingNewRecord = true }) {
             Image(systemName: "plus")
                 .font(.system(size: 24, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundColor(.customBackground)
                 .frame(width: 60, height: 60)
-                .background(Color.themeColor)
+                .background(Color.customBrandPrimary)
                 .clipShape(Circle())
-                .shadow(radius: 3)
+                .shadow(color: Color.black.opacity(0.15), radius: 4, y: 2)
         }
     }
     
@@ -205,12 +219,12 @@ struct ContentView: View {
         HStack {
             Text(month)
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .foregroundColor(.customSecondaryText)
                 .padding(.horizontal)
                 .padding(.vertical, 4)
             Spacer()
         }
-        .background(Color.white.opacity(0.9))
+        .background(Color.customCardBackground.opacity(0.9))
     }
     
     // MARK: - 辅助方法
@@ -339,7 +353,7 @@ struct RecordRow: View {
             }
         }
         .padding()
-        .background(Color(red: 0.985, green: 0.98, blue: 0.98))
+        .background(Color.customListBackground)
         .cornerRadius(12)
         .sheet(isPresented: $showingDetail) {
             RecordDetailView(record: record)

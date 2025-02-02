@@ -16,7 +16,7 @@ struct CalendarView: View {
                     Text(day)
                         .frame(maxWidth: .infinity)
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.customSecondaryText)
                 }
             }
             
@@ -95,7 +95,7 @@ struct DayCell: View {
             Circle()
                 .stroke(
                     hasRecord ? 
-                        Color.darkThemeColor.opacity(Color.getOpacityForIntensity(intensity)) : 
+                        Color.customBrandPrimary.opacity(Color.getOpacityForIntensity(intensity)) : 
                         Color.clear,
                     lineWidth: 1.5
                 )
@@ -103,12 +103,12 @@ struct DayCell: View {
                 .overlay(
                     Text("\(Calendar.current.component(.day, from: date))")
                         .font(.system(size: 12))
-                        .foregroundColor(.black)
+                        .foregroundColor(.customPrimaryText)
                 )
             
             if isToday {
                 Circle()
-                    .fill(Color.green)
+                    .fill(Color.customBrandPrimary)
                     .frame(width: 4, height: 4)
             } else {
                 Color.clear

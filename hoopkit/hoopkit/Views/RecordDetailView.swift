@@ -3,6 +3,7 @@ import SwiftUI
 struct RecordDetailView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var themeManager: ThemeManager
     @State private var isEditing = false
     @State private var showingTagSheet = false
     @State private var selectedTags: Set<BasketballTag>
@@ -24,6 +25,9 @@ struct RecordDetailView: View {
     
     @State private var showingDiscardAlert = false
     @State private var showingDeleteAlert = false  // 添加删除确认提示的状态
+    
+    @State private var showingError = false
+    @State private var errorMessage = ""
     
     init(record: BasketballRecord) {
         self.record = record
@@ -57,7 +61,7 @@ struct RecordDetailView: View {
                             HStack {
                                 Text("时间")
                                     .font(ViewStyles.labelFont)
-                                    .foregroundColor(ViewStyles.labelColor)
+                                    .foregroundColor(.customSecondaryText)
                                 
                                 Spacer()
                                 
@@ -66,16 +70,15 @@ struct RecordDetailView: View {
                                         .font(ViewStyles.labelFont)
                                         .labelsHidden()
                                         .fixedSize()
-                                        .scaleEffect(0.8)  // 缩小 DatePicker 的整体大小
-                                        .frame(width: 155, height: 30)  // 限制宽高
-                                        .background(ViewStyles.backgroundColor)
+                                        .scaleEffect(0.8)
+                                        .frame(width: 155, height: 30)
                                         .cornerRadius(ViewStyles.cornerRadius)
                                 } else {
                                     Text(record.wrappedDate.formatted(date: .abbreviated, time: .shortened))
                                         .font(ViewStyles.labelFont)
+                                        .foregroundColor(.customPrimaryText)
                                         .padding(.horizontal, ViewStyles.defaultPadding)
                                         .padding(.vertical, ViewStyles.smallPadding)
-                                        .background(ViewStyles.backgroundColor)
                                         .cornerRadius(ViewStyles.cornerRadius)
                                 }
                             }
@@ -106,47 +109,66 @@ struct RecordDetailView: View {
                     Button(action: {
                         if isEditing {
                             if hasUnsavedChanges {
+                                HapticManager.medium()
                                 showingDiscardAlert = true
                             } else {
-                                isEditing = false
+                                HapticManager.medium()
+                                withAnimation {
+                                    isEditing = false
+                                }
                             }
                         } else {
                             showingDeleteAlert = true
                         }
                     }) {
                         Image(systemName: isEditing ? "xmark" : "trash")
-                            .font(.system(size: 13))  // 设置图标大小
-                            .foregroundColor(isEditing ? .secondary : .red)
-                            .padding(.horizontal, 6)  // 减小内边距
-                            .padding(.vertical, 3)    // 减小内边距
+                            .font(.system(size: 13))
+                            .foregroundColor(isEditing ? .customSecondaryText : .red)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 3)
                             .background(isEditing ? 
-                                Color.secondary.opacity(0.1) : 
+                                Color.customListBackground : 
                                 Color.red.opacity(0.1))
                             .cornerRadius(6)
                     }
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        if isEditing {
-                            HapticManager.success()  // 添加成功触感
-                            saveChanges()
+                    if !isEditing {
+                        Button(action: {
+                            HapticManager.medium()
+                            withAnimation {
+                                isEditing.toggle()
+                            }
+                        }) {
+                            Image(systemName: "pencil")
+                                .font(.system(size: 13))
+                                .foregroundColor(.customSecondaryText)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 3)
+                                .background(Color.customListBackground)
+                                .cornerRadius(6)
                         }
-                        isEditing.toggle()
-                        HapticManager.impact(style: .medium)  // 添加触感
-                    }) {
-                        Image(systemName: isEditing ? "checkmark" : "square.and.pencil")
-                            .font(.system(size: 13))
-                            .foregroundColor(.themeColor)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 3)
-                            .background(Color.themeColor.opacity(0.1))
-                            .cornerRadius(6)
+                    } else {
+                        Button(action: {
+                            HapticManager.success()
+                            saveChanges()
+                        }) {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 13))
+                                .foregroundColor(.customBrandPrimary)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 3)
+                                .background(Color.customBrandPrimary.opacity(0.1))
+                                .cornerRadius(6)
+                        }
                     }
                 }
             }
         }
-        .navigationViewStyle(StackNavigationViewStyle())  // 添加这行来减小导航栏高度
+        .navigationViewStyle(StackNavigationViewStyle())
+        .background(Color.customBackground)
+        .preferredColorScheme(themeManager.currentTheme.colorScheme)
         .alert("放弃更改", isPresented: $showingDiscardAlert) {
             Button("继续编辑", role: .cancel) { }
             Button("放弃", role: .destructive) {
@@ -171,17 +193,10 @@ struct RecordDetailView: View {
             Text("确定要删除这条记录吗？此操作无法撤销。")
         }
         .interactiveDismissDisabled(isEditing && hasUnsavedChanges)
-    }
-    
-    private func handleDismiss() {
-        if isEditing && hasUnsavedChanges {
-            showingDiscardAlert = true
-        } else {
-            if isEditing {
-                isEditing = false
-            } else {
-                dismiss()
-            }
+        .alert("操作失败", isPresented: $showingError) {
+            Button("确定", role: .cancel) { }
+        } message: {
+            Text(errorMessage)
         }
     }
     
@@ -190,6 +205,7 @@ struct RecordDetailView: View {
             typeAndIntensityView
             durationView
             Divider()
+                .background(Color.customListBackground)
             notesView
         }
         .padding()
@@ -202,26 +218,21 @@ struct RecordDetailView: View {
             } else {
                 Text("类型")
                     .font(ViewStyles.labelFont)
-                    .foregroundColor(ViewStyles.labelColor)
+                    .foregroundColor(.customSecondaryText)
                 Text(record.gameType ?? "")
                     .font(ViewStyles.labelFont)
+                    .foregroundColor(.customPrimaryText)
+                    .padding(.horizontal, ViewStyles.defaultPadding)
+                    .padding(.vertical, ViewStyles.smallPadding)
+                    .cornerRadius(ViewStyles.cornerRadius)
             }
             
             Spacer()
             
             if isEditing {
-                IntensityControl(intensity: $editedIntensity)
+                IntensityControl(intensity: $editedIntensity, isEditing: true)
             } else {
-                Text("强度")
-                    .font(ViewStyles.labelFont)
-                    .foregroundColor(ViewStyles.labelColor)
-                HStack(spacing: ViewStyles.tinyPadding) {
-                    ForEach(1...5, id: \.self) { index in
-                        Image(systemName: index <= record.intensity ? "flame.fill" : "flame")
-                            .font(ViewStyles.labelFont)
-                            .foregroundColor(index <= record.intensity ? .themeColor : .gray)
-                    }
-                }
+                IntensityControl(intensity: .constant(Int(record.intensity)), isEditing: false)
             }
         }
     }
@@ -238,17 +249,18 @@ struct RecordDetailView: View {
         VStack(alignment: .leading) {
             if isEditing {
                 NotesEditor(notes: $editedNotes)
+                    .foregroundColor(.customPrimaryText)
             } else {
                 if let notes = record.notes, !notes.isEmpty {
                     Text(notes)
                         .font(ViewStyles.labelFont)
-                        .foregroundColor(.primary)
+                        .foregroundColor(.customPrimaryText)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(ViewStyles.smallPadding)
                 } else {
                     Text("未填写心得")
                         .font(ViewStyles.labelFont)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.customSecondaryText)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(ViewStyles.smallPadding)
                 }
@@ -264,6 +276,7 @@ struct RecordDetailView: View {
                     selectedTags: $selectedTags,
                     onSubmit: addTagIfNeeded
                 )
+                    .foregroundColor(.customPrimaryText)
             } else {
                 if !record.tagArray.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -271,17 +284,17 @@ struct RecordDetailView: View {
                             ForEach(record.tagArray) { tag in
                                 Text(tag.wrappedName)
                                     .font(ViewStyles.labelFont)
+                                    .foregroundColor(.customPrimaryText)
                                     .padding(.horizontal, ViewStyles.defaultPadding)
                                     .padding(.vertical, ViewStyles.smallPadding)
-                                    .background(ViewStyles.backgroundColor)  // 使用与时间组件相同的背景色
-                                    .cornerRadius(ViewStyles.cornerRadius)
+                                    .background(Color.customListBackground)
                             }
                         }
                     }
                 } else {
-                    Text("未设置标签")
+                    Text("未添加标签")
                         .font(ViewStyles.labelFont)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.customSecondaryText)
                         .padding(.vertical, ViewStyles.smallPadding)
                 }
             }
@@ -317,21 +330,17 @@ struct RecordDetailView: View {
     }
     
     private func saveChanges() {
-        record.gameType = editedGameType
-        record.duration = Int16(editedDuration)
-        record.intensity = Int16(editedIntensity)
-        record.notes = editedNotes
-        record.date = editedDate  // 保存编辑后的时间
-        record.tags = NSSet(array: Array(selectedTags))
-        
-        do {
-            try viewContext.save()
-        } catch {
-            print("Error saving changes: \(error)")
+        withAnimation {
+            do {
+                try viewContext.save()
+                HapticManager.success()
+                isEditing = false
+            } catch {
+                HapticManager.error()
+                showingError = true
+                errorMessage = error.localizedDescription
+            }
         }
-        
-        try? viewContext.save()
-        dismiss()
     }
     
     // 添加删除记录的方法
@@ -346,5 +355,6 @@ struct RecordDetailView: View {
     NavigationView {
         RecordDetailView(record: PreviewData.shared.sampleRecords[0])
             .environment(\.managedObjectContext, PreviewData.shared.context)
+            .environmentObject(ThemeManager.shared)
     }
 } 

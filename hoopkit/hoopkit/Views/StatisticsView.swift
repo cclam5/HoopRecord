@@ -9,6 +9,7 @@ struct StatisticsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showingTimeRangeSheet = false  // 添加状态控制 ActionSheet 显示
     @State private var showPopover = false  // 控制 popover 显示
+    @EnvironmentObject private var themeManager: ThemeManager
     
     // 添加时间范围枚举
     enum TimeRange {
@@ -391,19 +392,18 @@ struct StatisticsView: View {
                         Spacer()
                         
                         // 调整宽度的胶囊样式下拉列表
-                        Button {
-                            showPopover.toggle()
-                        } label: {
+                        Button(action: { showPopover = true }) {
                             HStack(spacing: 4) {
                                 Text(timeRange.title)
                                     .font(.subheadline)
+                                    .foregroundColor(.customPrimaryText)
                                 Image(systemName: "chevron.down")
-                                    .font(.system(size: 12))
+                                    .font(.caption)
+                                    .foregroundColor(.customSecondaryText)
                             }
-                            .foregroundColor(.primary)
                             .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color(red: 0.98, green: 0.96, blue: 0.94))
+                            .padding(.vertical, 4)
+                            .background(Color.customListBackground)
                             .clipShape(Capsule())
                             .frame(width: 65, height: 28)
                         }
@@ -413,7 +413,6 @@ struct StatisticsView: View {
                                     Button {
                                         withAnimation {
                                             if range == .week {
-                                                // 切换到周视图时，设置为本周
                                                 selectedDate = Date()
                                             }
                                             timeRange = range
@@ -422,7 +421,7 @@ struct StatisticsView: View {
                                     } label: {
                                         Text(range.title)
                                             .font(.subheadline)
-                                            .foregroundColor(.primary)
+                                            .foregroundColor(.customPrimaryText)
                                             .frame(width: 65, height: 36)
                                     }
                                     
@@ -432,7 +431,7 @@ struct StatisticsView: View {
                                 }
                             }
                             .padding(.vertical, 4)
-                            .background(Color(.systemBackground))
+                            .background(Color.customCardBackground)
                             .frame(width: 65)
                             .presentationCompactAdaptation(.popover)
                         }
@@ -459,17 +458,17 @@ struct StatisticsView: View {
                     HStack {
                         Text("打球日历")
                             .font(.headline)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.customSecondaryText)
                         Spacer()
                         // 添加强度图例和标题
                         HStack(spacing: 8) {
                             Text("强度")
                                 .font(.caption)
-                                .foregroundColor(.gray)
+                                .foregroundColor(.customSecondaryText)
                             HStack(spacing: 4) {
                                 ForEach(intensityLegends, id: \.level) { legend in
                                     Circle()
-                                        .fill(Color.darkThemeColor.opacity(legend.opacity))
+                                        .fill(Color.customBrandPrimary.opacity(legend.opacity))
                                         .frame(width: 8, height: 8)
                                 }
                             }
@@ -478,15 +477,14 @@ struct StatisticsView: View {
                     .padding(.horizontal)
                     
                     CalendarView(records: filteredRecords, selectedDate: selectedDate)
-                        // .padding(.vertical)
                 }
-                .padding(.vertical, 12)  // 增加内边距
-                .background(  // 添加背景和阴影
+                .padding(.vertical, 12)
+                .background(
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.white)
+                        .fill(Color.customCardBackground)
                         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
                 )
-                .padding(.horizontal)  // 保持水平边距
+                .padding(.horizontal)
             }
             .padding(.vertical)
         }
@@ -495,14 +493,15 @@ struct StatisticsView: View {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: { dismiss() }) {
                     Image(systemName: "chevron.left")
-                        .foregroundColor(.darkThemeColor)
+                        .foregroundColor(.customBrandPrimary)
                         .imageScale(.medium)
                 }
             }
         }
         .toolbarBackground(.hidden, for: .navigationBar)
         .navigationBarBackButtonHidden(false)
-        .background(Color.white)
+        .background(Color.customBackground)
+        .preferredColorScheme(themeManager.currentTheme.colorScheme)
         .confirmationDialog("选择时间范围", isPresented: $showingTimeRangeSheet, titleVisibility: .hidden) {
             Button("周") {
                 withAnimation {
@@ -731,13 +730,13 @@ struct WeeklyDistributionChart: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text(formatDate(for: selectedDay))
                             .font(.subheadline)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.customSecondaryText)
                         
                         ForEach(dayRecords) { record in
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(record.wrappedGameType)
                                     .font(.subheadline)
-                                    .foregroundColor(.primary)
+                                    .foregroundColor(.customPrimaryText)
                                     .lineLimit(1)
                                 
                                 HStack(spacing: 12) {
@@ -756,7 +755,7 @@ struct WeeklyDistributionChart: View {
                                     }
                                 }
                                 .font(.caption)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.customSecondaryText)
                             }
                             .padding(.vertical, 4)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -770,7 +769,7 @@ struct WeeklyDistributionChart: View {
                     .frame(minWidth: 160, maxWidth: 220)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.white)
+                            .fill(Color.customCardBackground)
                             .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
                     )
                     .padding()
@@ -982,13 +981,13 @@ struct MonthlyDistributionChart: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text(formatDate(day: selectedBar))
                             .font(.subheadline)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.customSecondaryText)
                         
                         ForEach(dayRecords) { record in
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(record.wrappedGameType)
                                     .font(.subheadline)
-                                    .foregroundColor(.primary)
+                                    .foregroundColor(.customPrimaryText)
                                     .lineLimit(1)
                                 
                                 HStack(spacing: 12) {
@@ -1007,7 +1006,7 @@ struct MonthlyDistributionChart: View {
                                     }
                                 }
                                 .font(.caption)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.customSecondaryText)
                             }
                             .padding(.vertical, 4)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -1021,7 +1020,7 @@ struct MonthlyDistributionChart: View {
                     .frame(minWidth: 160, maxWidth: 220)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.white)
+                            .fill(Color.customCardBackground)
                             .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
                     )
                     .padding()
