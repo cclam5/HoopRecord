@@ -9,6 +9,8 @@ struct SettingsView: View {
     @State private var showingUserAgreement = false
     @State private var showingPrivacyPolicy = false
     @State private var showingAboutUs = false
+    @State private var showToast = false
+    @State private var toastMessage = ""
     
     var body: some View {
         NavigationView {
@@ -157,6 +159,23 @@ struct SettingsView: View {
             .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden)
             .background(Color.customBackground)
+            .overlay(
+                Group {
+                    if showToast {
+                        VStack {
+                            Spacer()
+                                Text(toastMessage)
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 10)
+                                    .background(Color.black.opacity(0.7))
+                                    .cornerRadius(8)
+                                .padding(.bottom, 20)
+                        }
+                        .transition(.opacity)
+                    }
+                }
+            )
         }
         .preferredColorScheme(themeManager.currentTheme.colorScheme)
         .confirmationDialog("选择语言", isPresented: $showingLanguagePicker) {
@@ -167,12 +186,15 @@ struct SettingsView: View {
         .confirmationDialog("选择主题", isPresented: $showingThemePicker) {
             Button("浅色") { 
                 themeManager.currentTheme = .light
+                showThemeToast("已切换到浅色主题")
             }
             Button("深色") { 
                 themeManager.currentTheme = .dark
+                showThemeToast("已切换到深色主题")
             }
             Button("跟随系统") { 
                 themeManager.currentTheme = .system
+                showThemeToast("已切换到跟随系统")
             }
             Button("取消", role: .cancel) { }
         }
@@ -220,6 +242,18 @@ struct SettingsView: View {
         // 发送反馈邮件
         if let url = URL(string: "mailto:support@example.com?subject=HoopKit反馈与建议") {
             UIApplication.shared.open(url)
+        }
+    }
+    
+    private func showThemeToast(_ message: String) {
+        toastMessage = message
+        withAnimation {
+            showToast = true
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            withAnimation {
+                showToast = false
+            }
         }
     }
 }
