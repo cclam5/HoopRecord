@@ -355,4 +355,5 @@ struct AboutUsView: View {
 
 #Preview {
     SettingsView()
+        .environmentObject(ThemeManager.shared)
 } 

@@ -56,4 +56,5 @@ struct HelpCenterView: View {
 
 #Preview {
     HelpCenterView()
+        .environmentObject(ThemeManager.shared)
 } 

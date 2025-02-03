@@ -178,5 +178,6 @@ struct SearchResultList: View {
     NavigationView {
         SearchView()
             .environment(\.managedObjectContext, PreviewData.shared.context)
+            .environmentObject(ThemeManager.shared)
     }
 } 

@@ -250,6 +250,10 @@ struct RecordRow: View {
     @State private var showingDetail = false
     @State private var isExpanded = false
     @Environment(\.managedObjectContext) private var viewContext
+    @EnvironmentObject private var themeManager: ThemeManager
+    @State private var textHeight: CGFloat = 0
+    private let maxCollapsedHeight: CGFloat = 100
+    @State private var needsExpansion = false
     
     private var durationInHours: String {
         let hours = Double(record.duration) / 60.0
@@ -319,8 +323,24 @@ struct RecordRow: View {
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .lineLimit(isExpanded ? nil : 5)
-                    
-                    if notes.count > 100 {
+                        .background(
+                            Text(notes)
+                                .font(.subheadline)
+                                .lineLimit(nil)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .hidden()
+                                .background(GeometryReader { geometry in
+                                    Color.clear.preference(
+                                        key: TextHeightKey.self,
+                                        value: geometry.size.height
+                                    )
+                                })
+                        )
+                        .onPreferenceChange(TextHeightKey.self) { height in
+                            needsExpansion = height > 100
+                        }
+
+                    if needsExpansion {
                         Button(action: {
                             withAnimation {
                                 isExpanded.toggle()
@@ -330,6 +350,7 @@ struct RecordRow: View {
                                 .font(.subheadline)
                                 .foregroundColor(.themeColor)
                         }
+                        .padding(.top, 4)
                     }
                 }
             }
@@ -341,10 +362,10 @@ struct RecordRow: View {
                         ForEach(record.tagArray) { tag in
                             Text(tag.wrappedName)
                                 .font(.caption)
-                                .foregroundColor(Color.themeColor)
+                                .foregroundColor(Color.customTagText)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
-                                .background(Color.themeColor.opacity(0.1))
+                                .background(Color.customTagBackground)
                                 .cornerRadius(8)
                         }
                     }
@@ -399,8 +420,17 @@ struct ContentHeightKey: PreferenceKey {
     }
 }
 
+// 用于获取文本高度的 PreferenceKey
+struct TextHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
 #Preview {
     ContentView()
         .environment(\.managedObjectContext, PreviewData.shared.context)
+        .environmentObject(ThemeManager.shared)
 } 
 

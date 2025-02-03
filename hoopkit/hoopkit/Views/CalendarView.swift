@@ -95,9 +95,9 @@ struct DayCell: View {
             Circle()
                 .stroke(
                     hasRecord ? 
-                        Color.customBrandPrimary.opacity(Color.getOpacityForIntensity(intensity)) : 
+                        Color.getColorForIntensity(intensity) : 
                         Color.clear,
-                    lineWidth: 1.5
+                    lineWidth: 2.0
                 )
                 .frame(width: 32, height: 32)
                 .overlay(

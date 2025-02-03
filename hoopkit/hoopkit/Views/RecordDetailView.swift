@@ -288,6 +288,8 @@ struct RecordDetailView: View {
                                     .padding(.horizontal, ViewStyles.defaultPadding)
                                     .padding(.vertical, ViewStyles.smallPadding)
                                     .background(Color.customListBackground)
+                                    .cornerRadius(ViewStyles.cornerRadius)
+
                             }
                         }
                     }
@@ -332,6 +334,15 @@ struct RecordDetailView: View {
     private func saveChanges() {
         withAnimation {
             do {
+                // 更新记录的值
+                record.gameType = editedGameType
+                record.duration = Int16(editedDuration)
+                record.intensity = Int16(editedIntensity)
+                record.notes = editedNotes
+                record.date = editedDate
+                record.tags = NSSet(array: Array(selectedTags))
+                
+                // 保存更改
                 try viewContext.save()
                 HapticManager.success()
                 isEditing = false

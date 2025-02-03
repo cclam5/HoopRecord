@@ -202,7 +202,7 @@ struct TagView: View {
         }
         .padding(.horizontal, ViewStyles.defaultPadding)
         .padding(.vertical, ViewStyles.smallPadding)
-        .background(ViewStyles.backgroundColor)
+        .background(Color.customListBackground)
         .cornerRadius(ViewStyles.cornerRadius)
     }
 } 

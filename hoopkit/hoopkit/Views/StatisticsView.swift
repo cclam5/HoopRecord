@@ -291,11 +291,11 @@ struct StatisticsView: View {
     }
     
     private let intensityLegends = [
-        (level: 1, opacity: 0.65),
-        (level: 2, opacity: 0.75),
-        (level: 3, opacity: 0.85),
-        (level: 4, opacity: 0.93),
-        (level: 5, opacity: 1.0)
+        (level: 1, color: Color.getColorForIntensity(1)),
+        (level: 2, color: Color.getColorForIntensity(2)),
+        (level: 3, color: Color.getColorForIntensity(3)),
+        (level: 4, color: Color.getColorForIntensity(4)),
+        (level: 5, color: Color.getColorForIntensity(5))
     ]
     
     // 判断是否为本周/本月
@@ -468,7 +468,7 @@ struct StatisticsView: View {
                             HStack(spacing: 4) {
                                 ForEach(intensityLegends, id: \.level) { legend in
                                     Circle()
-                                        .fill(Color.customBrandPrimary.opacity(legend.opacity))
+                                        .fill(legend.color)
                                         .frame(width: 8, height: 8)
                                 }
                             }
@@ -664,9 +664,7 @@ struct WeeklyDistributionChart: View {
                 width: .fixed(16)
             )
             .foregroundStyle(
-                Color.darkThemeColor.opacity(
-                    Color.getOpacityForIntensity(getAverageIntensity(for: item.0))
-                )
+                Color.getColorForIntensity(getAverageIntensity(for: item.0))
             )
             .cornerRadius(4)
             .opacity(selectedDay == nil || 
@@ -879,7 +877,7 @@ struct MonthlyDistributionChart: View {
         print("- 找到记录数: \(dayRecords.count)")
         print("- 总强度: \(totalIntensity)")
         print("- 平均强度: \(averageIntensity)")
-        print("- 对应透明度: \(Color.getOpacityForIntensity(averageIntensity))")
+        print("- 对应颜色: \(Color.getColorForIntensity(averageIntensity))")
         
         return averageIntensity
     }
@@ -900,7 +898,6 @@ struct MonthlyDistributionChart: View {
     var body: some View {
         Chart(monthlyData, id: \.0) { item in
             let intensity = getAverageIntensity(for: item.0)
-            let opacity = Color.getOpacityForIntensity(intensity)
             let day = Int(item.0) ?? 0
             
             BarMark(
@@ -908,7 +905,7 @@ struct MonthlyDistributionChart: View {
                 y: .value("时长", item.1),
                 width: .fixed(6)
             )
-            .foregroundStyle(Color.darkThemeColor.opacity(opacity))
+            .foregroundStyle(Color.getColorForIntensity(intensity))
             .cornerRadius(4)
             .opacity(selectedBar == nil || 
                     selectedBar == day || 

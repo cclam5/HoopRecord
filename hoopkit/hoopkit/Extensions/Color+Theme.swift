@@ -45,4 +45,14 @@ extension Color {
     static var customNavigationBackground: Color {
         Color("navigationBackground")
     }
+    
+    // 标签文字颜色
+    static var customTagText: Color {
+        Color("tagText")
+    }
+    
+    // 标签背景色
+    static var customTagBackground: Color {
+        Color("tagBackground")
+    }
 } 

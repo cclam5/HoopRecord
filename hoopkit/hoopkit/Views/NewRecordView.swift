@@ -218,5 +218,6 @@ struct NewRecordView: View {
     NavigationView {
         NewRecordView()
             .environment(\.managedObjectContext, PreviewData.shared.context)
+            .environmentObject(ThemeManager.shared)
     }
 } 
