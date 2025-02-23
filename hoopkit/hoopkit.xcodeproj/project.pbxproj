@@ -70,9 +70,22 @@
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		3E75FF9B2D6B52D400E6BCF6 /* Exceptions for "hoopkit" folder in "Copy Bundle Resources" phase from "HoopKitWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = 3E75FEEA2D6B34A800E6BCF6 /* Resources */;
+			membershipExceptions = (
+				hoopkit.xcdatamodeld,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		3E012BEA2D22FA6600F8A160 /* hoopkit */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				3E75FF9B2D6B52D400E6BCF6 /* Exceptions for "hoopkit" folder in "Copy Bundle Resources" phase from "HoopKitWidgetExtension" target */,
+			);
 			path = hoopkit;
 			sourceTree = "<group>";
 		};

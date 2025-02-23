@@ -6,18 +6,18 @@ struct CalendarWidgetView: View {
     @Environment(\.widgetFamily) var family
     
     private let calendar = Calendar.current
-    private let gridColumns = Array(repeating: GridItem(.flexible(), spacing: 1), count: 7)
+    private let gridColumns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
     
     var body: some View {
-        VStack(spacing: family == .systemSmall ? 6 : 8) {
+        VStack(spacing: family == .systemSmall ? 8 : 10) {
             // 日历网格
-            LazyVGrid(columns: gridColumns, spacing: 1) {
+            LazyVGrid(columns: gridColumns, spacing: 4) {
                 ForEach(daysInMonth(), id: \.self) { date in
                     if let date = date {
                         WidgetDayCell(
-                            hasRecord: hasRecord(on: date),
+                            record: recordForDate(date),
                             isToday: calendar.isDateInToday(date),
-                            size: family == .systemSmall ? 20 : 28
+                            size: family == .systemSmall ? 16 : 24
                         )
                     } else {
                         Color.clear
@@ -27,8 +27,9 @@ struct CalendarWidgetView: View {
             }
             
             // 统计信息
-            HStack(spacing: 4) {
-                Text("本月打球\(records.count)次")
+            HStack {
+                Spacer()
+                Text("\(records.count)次")
                     .font(.system(size: family == .systemSmall ? 11 : 13))
                     .foregroundColor(.primary)
                 Text("·")
@@ -39,7 +40,14 @@ struct CalendarWidgetView: View {
                 Spacer()
             }
         }
-        .padding(family == .systemSmall ? 8 : 12)
+        .padding(.horizontal, family == .systemSmall ? 12 : 16)
+        .padding(.vertical, family == .systemSmall ? 8 : 12)
+    }
+    
+    private func recordForDate(_ date: Date) -> BasketballRecord? {
+        records.first { record in
+            calendar.isDate(record.wrappedDate, inSameDayAs: date)
+        }
     }
     
     private var averageHoursPerDay: Double {
@@ -60,33 +68,48 @@ struct CalendarWidgetView: View {
             matching: DateComponents(hour: 0, minute: 0, second: 0)
         )
         
-        let firstWeekday = calendar.component(.weekday, from: interval.start)
-        let adjustedFirstWeekday = firstWeekday == 1 ? 6 : firstWeekday - 2
-        let prefixDays = Array(repeating: nil as Date?, count: adjustedFirstWeekday)
-        
-        return prefixDays + days.map { Optional($0) }
-    }
-    
-    private func hasRecord(on date: Date) -> Bool {
-        records.contains { record in
-            calendar.isDate(record.wrappedDate, inSameDayAs: date)
-        }
+        return days.map { Optional($0) }
     }
 }
 
 struct WidgetDayCell: View {
-    let hasRecord: Bool
+    let record: BasketballRecord?
     let isToday: Bool
     let size: CGFloat
+    @Environment(\.colorScheme) var colorScheme
+    
+    private let glowColor = Color(red: 1, green: 0.9, blue: 0.4)
     
     var body: some View {
         Circle()
-            .fill(hasRecord ? Color.green.opacity(0.3) : Color.clear)
+            .fill(backgroundColor)
+            .overlay(
+                Group {
+                    if record != nil {
+                        Image("ballwhite")
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: size * 1.25, height: size * 1.25)
+                            .clipped()
+                    }
+                }
+            )
             .overlay(
                 Circle()
-                    .stroke(isToday ? Color.blue : Color.gray.opacity(0.2), lineWidth: 0.5)
+                    .stroke(isToday ? glowColor : Color.clear, lineWidth: isToday ? 1.5 : 1)
             )
+            .shadow(color: isToday ? glowColor.opacity(0.5) : .clear, radius: 2)
+            .shadow(color: isToday ? glowColor.opacity(0.3) : .clear, radius: 4)
             .frame(width: size, height: size)
+            .clipShape(Circle())
+    }
+    
+    private var backgroundColor: Color {
+        if let record = record {
+            return Color.getColorForIntensity(Int(record.intensity))
+        }
+        // 根据深色/浅色模式调整背景颜色
+        return colorScheme == .dark ? Color.gray.opacity(0.25) : Color.gray.opacity(0.1)
     }
 }
 

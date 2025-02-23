@@ -7,19 +7,27 @@
 
 import WidgetKit
 import SwiftUI
+import os
 
 struct Provider: TimelineProvider {
+    let coreDataManager = CoreDataManager.shared
+    private let logger = Logger(subsystem: "com.cc.hoopkit.widget", category: "Widget")
+    
     func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(), records: [])
+        logger.debug("Loading placeholder")
+        return SimpleEntry(date: Date(), records: [])
     }
 
     func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
-        let records = CoreDataManager.shared.fetchRecordsForCurrentMonth()
+        logger.debug("Getting snapshot")
+        let records = coreDataManager.fetchRecordsForCurrentMonth()
+        logger.debug("Snapshot found \(records.count) records")
         let entry = SimpleEntry(date: Date(), records: records)
         completion(entry)
     }
     
     func getTimeline(in context: Context, completion: @escaping (Timeline<SimpleEntry>) -> ()) {
+        logger.debug("Getting timeline")
         var entries: [SimpleEntry] = []
         
         // 获取今天的开始时间
@@ -27,13 +35,16 @@ struct Provider: TimelineProvider {
         let startOfDay = calendar.startOfDay(for: Date())
         
         // 获取当前月份的记录
-        let records = CoreDataManager.shared.fetchRecordsForCurrentMonth()
+        let records = coreDataManager.fetchRecordsForCurrentMonth()
+        logger.debug("Timeline found \(records.count) records")
+        
         let entry = SimpleEntry(date: startOfDay, records: records)
         entries.append(entry)
         
-        // 设置下一次更新时间为明天凌晨
-        let nextUpdateDate = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
+        // 设置更频繁的更新
+        let nextUpdateDate = Date().addingTimeInterval(5 * 60) // 每5分钟更新一次
         let timeline = Timeline(entries: entries, policy: .after(nextUpdateDate))
+        logger.debug("Next update scheduled for: \(nextUpdateDate)")
         
         completion(timeline)
     }
