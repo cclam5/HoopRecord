@@ -78,30 +78,34 @@ struct WidgetDayCell: View {
     let size: CGFloat
     @Environment(\.colorScheme) var colorScheme
     
-    private let glowColor = Color(red: 1, green: 0.9, blue: 0.4)
+    private let glowColor = Color(red: 1, green: 0.85, blue: 0.3)  // 偏橙色的黄色
     
     var body: some View {
-        Circle()
-            .fill(backgroundColor)
-            .overlay(
-                Group {
-                    if record != nil {
-                        Image("ballwhite")
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: size * 1.25, height: size * 1.25)
-                            .clipped()
-                    }
-                }
-            )
-            .overlay(
+        ZStack {
+            // 发光效果层
+            if isToday {
                 Circle()
-                    .stroke(isToday ? glowColor : Color.clear, lineWidth: isToday ? 1.5 : 1)
-            )
-            .shadow(color: isToday ? glowColor.opacity(0.5) : .clear, radius: 2)
-            .shadow(color: isToday ? glowColor.opacity(0.3) : .clear, radius: 4)
-            .frame(width: size, height: size)
-            .clipShape(Circle())
+                    .stroke(glowColor, lineWidth: 1.5)
+                    .shadow(color: glowColor.opacity(0.6), radius: 2)
+                    .shadow(color: glowColor.opacity(0.4), radius: 4)
+            }
+            
+            // 主要内容层
+            Circle()
+                .fill(backgroundColor)
+                .overlay(
+                    Group {
+                        if record != nil {
+                            Image("ballwhite")
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: size * 1.25, height: size * 1.25)
+                                .clipped()
+                        }
+                    }
+                )
+        }
+        .frame(width: size, height: size)
     }
     
     private var backgroundColor: Color {
