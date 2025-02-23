@@ -90,6 +90,8 @@ struct DayCell: View {
     let intensity: Int
     let isToday: Bool
     
+    private let todayDotColor = Color(red: 1, green: 0.8, blue: 0.3)  // 偏橙色的黄色
+    
     var body: some View {
         VStack(spacing: 2) {
             Circle()
@@ -108,7 +110,7 @@ struct DayCell: View {
             
             if isToday {
                 Circle()
-                    .fill(Color.customBrandPrimary)
+                    .fill(todayDotColor)
                     .frame(width: 4, height: 4)
             } else {
                 Color.clear
