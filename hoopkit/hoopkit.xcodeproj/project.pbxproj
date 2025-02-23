@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		3E75FEEF2D6B34A800E6BCF6 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3E75FEEE2D6B34A800E6BCF6 /* WidgetKit.framework */; };
+		3E75FEF12D6B34A800E6BCF6 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3E75FEF02D6B34A800E6BCF6 /* SwiftUI.framework */; };
+		3E75FF022D6B34AA00E6BCF6 /* HoopKitWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3E75FEEC2D6B34A800E6BCF6 /* HoopKitWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		3E012BFE2D22FA6700F8A160 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -21,13 +27,48 @@
 			remoteGlobalIDString = 3E012BE72D22FA6600F8A160;
 			remoteInfo = hoopkit;
 		};
+		3E75FF002D6B34AA00E6BCF6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3E012BE02D22FA6600F8A160 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3E75FEEB2D6B34A800E6BCF6;
+			remoteInfo = HoopKitWidgetExtension;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		3E75FF072D6B34AA00E6BCF6 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				3E75FF022D6B34AA00E6BCF6 /* HoopKitWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		3E012BE82D22FA6600F8A160 /* hoopkit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = hoopkit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3E012BFD2D22FA6700F8A160 /* hoopkitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hoopkitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3E012C072D22FA6700F8A160 /* hoopkitUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hoopkitUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3E75FEEC2D6B34A800E6BCF6 /* HoopKitWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = HoopKitWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		3E75FEEE2D6B34A800E6BCF6 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		3E75FEF02D6B34A800E6BCF6 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		3E75FF082D6B38D600E6BCF6 /* HoopKitWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HoopKitWidgetExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		3E75FF032D6B34AA00E6BCF6 /* Exceptions for "HoopKitWidget" folder in "HoopKitWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 3E75FEEB2D6B34A800E6BCF6 /* HoopKitWidgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		3E012BEA2D22FA6600F8A160 /* hoopkit */ = {
@@ -43,6 +84,14 @@
 		3E012C0A2D22FA6700F8A160 /* hoopkitUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = hoopkitUITests;
+			sourceTree = "<group>";
+		};
+		3E75FEF22D6B34A800E6BCF6 /* HoopKitWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				3E75FF032D6B34AA00E6BCF6 /* Exceptions for "HoopKitWidget" folder in "HoopKitWidgetExtension" target */,
+			);
+			path = HoopKitWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -69,15 +118,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		3E75FEE92D6B34A800E6BCF6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3E75FEF12D6B34A800E6BCF6 /* SwiftUI.framework in Frameworks */,
+				3E75FEEF2D6B34A800E6BCF6 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		3E012BDF2D22FA6600F8A160 = {
 			isa = PBXGroup;
 			children = (
+				3E75FF082D6B38D600E6BCF6 /* HoopKitWidgetExtension.entitlements */,
 				3E012BEA2D22FA6600F8A160 /* hoopkit */,
 				3E012C002D22FA6700F8A160 /* hoopkitTests */,
 				3E012C0A2D22FA6700F8A160 /* hoopkitUITests */,
+				3E75FEF22D6B34A800E6BCF6 /* HoopKitWidget */,
+				3E75FEED2D6B34A800E6BCF6 /* Frameworks */,
 				3E012BE92D22FA6600F8A160 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -88,8 +149,18 @@
 				3E012BE82D22FA6600F8A160 /* hoopkit.app */,
 				3E012BFD2D22FA6700F8A160 /* hoopkitTests.xctest */,
 				3E012C072D22FA6700F8A160 /* hoopkitUITests.xctest */,
+				3E75FEEC2D6B34A800E6BCF6 /* HoopKitWidgetExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		3E75FEED2D6B34A800E6BCF6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3E75FEEE2D6B34A800E6BCF6 /* WidgetKit.framework */,
+				3E75FEF02D6B34A800E6BCF6 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -102,10 +173,12 @@
 				3E012BE42D22FA6600F8A160 /* Sources */,
 				3E012BE52D22FA6600F8A160 /* Frameworks */,
 				3E012BE62D22FA6600F8A160 /* Resources */,
+				3E75FF072D6B34AA00E6BCF6 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				3E75FF012D6B34AA00E6BCF6 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				3E012BEA2D22FA6600F8A160 /* hoopkit */,
@@ -163,6 +236,28 @@
 			productReference = 3E012C072D22FA6700F8A160 /* hoopkitUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		3E75FEEB2D6B34A800E6BCF6 /* HoopKitWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3E75FF042D6B34AA00E6BCF6 /* Build configuration list for PBXNativeTarget "HoopKitWidgetExtension" */;
+			buildPhases = (
+				3E75FEE82D6B34A800E6BCF6 /* Sources */,
+				3E75FEE92D6B34A800E6BCF6 /* Frameworks */,
+				3E75FEEA2D6B34A800E6BCF6 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				3E75FEF22D6B34A800E6BCF6 /* HoopKitWidget */,
+			);
+			name = HoopKitWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = HoopKitWidgetExtension;
+			productReference = 3E75FEEC2D6B34A800E6BCF6 /* HoopKitWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -184,6 +279,9 @@
 						CreatedOnToolsVersion = 16.2;
 						TestTargetID = 3E012BE72D22FA6600F8A160;
 					};
+					3E75FEEB2D6B34A800E6BCF6 = {
+						CreatedOnToolsVersion = 16.2;
+					};
 				};
 			};
 			buildConfigurationList = 3E012BE32D22FA6600F8A160 /* Build configuration list for PBXProject "hoopkit" */;
@@ -204,6 +302,7 @@
 				3E012BE72D22FA6600F8A160 /* hoopkit */,
 				3E012BFC2D22FA6700F8A160 /* hoopkitTests */,
 				3E012C062D22FA6700F8A160 /* hoopkitUITests */,
+				3E75FEEB2D6B34A800E6BCF6 /* HoopKitWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -224,6 +323,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		3E012C052D22FA6700F8A160 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3E75FEEA2D6B34A800E6BCF6 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -254,6 +360,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		3E75FEE82D6B34A800E6BCF6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -266,6 +379,11 @@
 			isa = PBXTargetDependency;
 			target = 3E012BE72D22FA6600F8A160 /* hoopkit */;
 			targetProxy = 3E012C082D22FA6700F8A160 /* PBXContainerItemProxy */;
+		};
+		3E75FF012D6B34AA00E6BCF6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3E75FEEB2D6B34A800E6BCF6 /* HoopKitWidgetExtension */;
+			targetProxy = 3E75FF002D6B34AA00E6BCF6 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -394,6 +512,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = hoopkit/hoopkit.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"hoopkit/Preview Content\"";
@@ -423,6 +542,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = hoopkit/hoopkit.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"hoopkit/Preview Content\"";
@@ -519,6 +639,62 @@
 			};
 			name = Release;
 		};
+		3E75FF052D6B34AA00E6BCF6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = HoopKitWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 87C864GKPU;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HoopKitWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = HoopKitWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.handleRecord.hoopkit.HoopKitWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		3E75FF062D6B34AA00E6BCF6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = HoopKitWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 87C864GKPU;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HoopKitWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = HoopKitWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.handleRecord.hoopkit.HoopKitWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -554,6 +730,15 @@
 			buildConfigurations = (
 				3E012C182D22FA6700F8A160 /* Debug */,
 				3E012C192D22FA6700F8A160 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3E75FF042D6B34AA00E6BCF6 /* Build configuration list for PBXNativeTarget "HoopKitWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3E75FF052D6B34AA00E6BCF6 /* Debug */,
+				3E75FF062D6B34AA00E6BCF6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

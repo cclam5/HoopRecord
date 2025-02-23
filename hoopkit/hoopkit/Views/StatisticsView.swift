@@ -1,6 +1,7 @@
 import SwiftUI
 import CoreData
 import Charts
+import WidgetKit
 
 struct StatisticsView: View {
     @Environment(\.managedObjectContext) private var viewContext
@@ -322,6 +323,41 @@ struct StatisticsView: View {
         }
     }
     
+    private func updateWidgetData() {
+        guard let sharedDefaults = UserDefaults(suiteName: "group.com.yourapp.hoopkit") else { return }
+        
+        // 更新总时长（小时）
+        let totalHours = Double(allRecords.reduce(0) { $0 + Int($1.duration) }) / 60.0
+        sharedDefaults.set(totalHours, forKey: "totalHours")
+        
+        // 更新本周时长（小时）
+        let weeklyHours = totalWeeklyHours
+        sharedDefaults.set(weeklyHours, forKey: "weeklyHours")
+        
+        // 计算连续打球天数
+        var streak = 0
+        let calendar = Calendar.current
+        var currentDate = Date()
+        
+        while true {
+            let dayRecords = allRecords.filter { record in
+                calendar.isDate(record.wrappedDate, inSameDayAs: currentDate)
+            }
+            
+            if dayRecords.isEmpty {
+                break
+            }
+            
+            streak += 1
+            currentDate = calendar.date(byAdding: .day, value: -1, to: currentDate) ?? currentDate
+        }
+        
+        sharedDefaults.set(streak, forKey: "streak")
+        
+        // 刷新小组件
+        WidgetCenter.shared.reloadAllTimelines()
+    }
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 8) {
@@ -516,6 +552,9 @@ struct StatisticsView: View {
             }
             
             Button("取消", role: .cancel) { }
+        }
+        .onAppear {
+            updateWidgetData()
         }
     }
     

@@ -9,6 +9,7 @@ struct SettingsView: View {
     @State private var showingUserAgreement = false
     @State private var showingPrivacyPolicy = false
     @State private var showingAboutUs = false
+    @State private var showingComponents = false
     @State private var showToast = false
     @State private var toastMessage = ""
     
@@ -78,6 +79,18 @@ struct SettingsView: View {
                     Button(action: { showingAboutUs = true }) {
                         HStack {
                             Text("关于我们")
+                                .foregroundColor(.customPrimaryText)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 13))
+                                .foregroundColor(.customSecondaryText)
+                        }
+                    }
+                    .listRowBackground(Color.customListBackground)
+
+                    Button(action: { showingComponents = true }) {
+                        HStack {
+                            Text("组件")
                                 .foregroundColor(.customPrimaryText)
                             Spacer()
                             Image(systemName: "chevron.right")
@@ -206,6 +219,9 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showingAboutUs) {
             AboutUsView()
+        }
+        .sheet(isPresented: $showingComponents) {
+            ComponentsView()
         }
     }
     
