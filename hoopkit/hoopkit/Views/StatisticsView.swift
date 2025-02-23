@@ -481,7 +481,7 @@ struct StatisticsView: View {
                 .padding(.vertical, 12)
                 .background(
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.customCardBackground)
+                        .fill(Color.customCalendarBackground)
                         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
                 )
                 .padding(.horizontal)
@@ -493,7 +493,7 @@ struct StatisticsView: View {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: { dismiss() }) {
                     Image(systemName: "chevron.left")
-                        .foregroundColor(.customBrandPrimary)
+                        .foregroundColor(.customToolbarButton)
                         .imageScale(.medium)
                 }
             }
@@ -1042,5 +1042,6 @@ struct MonthlyDistributionChart: View {
     NavigationView {
         StatisticsView()
             .environment(\.managedObjectContext, PreviewData.shared.context)
+            .environmentObject(ThemeManager.shared)
     }
 } 

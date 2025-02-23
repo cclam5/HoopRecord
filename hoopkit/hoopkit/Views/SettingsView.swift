@@ -151,7 +151,7 @@ struct SettingsView: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "chevron.left")
-                            .foregroundColor(.customBrandPrimary)
+                            .foregroundColor(.customToolbarButton)
                             .imageScale(.medium)
                     }
                 }

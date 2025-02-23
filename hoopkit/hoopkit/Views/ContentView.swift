@@ -75,7 +75,7 @@ struct ContentView: View {
                 HStack {
                     NavigationLink(destination: StatisticsView().navigationBarBackButtonHidden(true)) {
                         Image(systemName: "chart.bar.fill")
-                            .foregroundColor(.customBrandPrimary)
+                            .foregroundColor(.customToolbarButton)
                             .imageScale(.medium)
                     }
                     Spacer()
@@ -84,7 +84,7 @@ struct ContentView: View {
                 
                 // 中间的 BallIcon
                 Image("ballIcon")
-                    .foregroundColor(.customBrandPrimary)
+                    .foregroundColor(.customToolbarButton)
                     .imageScale(.medium)
                     .rotationEffect(.degrees(90))
                 
@@ -123,14 +123,14 @@ struct ContentView: View {
                             }
                         } label: {
                             Image(systemName: "ellipsis")
-                                .foregroundColor(.customBrandPrimary)
+                                .foregroundColor(.customToolbarButton)
                                 .imageScale(.medium)
                         }
                         .menuStyle(CompactMenu())
                         
                         NavigationLink(destination: SearchView().navigationBarBackButtonHidden(true)) {
                             Image(systemName: "magnifyingglass")
-                                .foregroundColor(.customBrandPrimary)
+                                .foregroundColor(.customToolbarButton)
                                 .imageScale(.medium)
                         }
                     }

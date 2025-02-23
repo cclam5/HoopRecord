@@ -55,4 +55,14 @@ extension Color {
     static var customTagBackground: Color {
         Color("tagBackground")
     }
+    
+    // 日历卡片背景色
+    static var customCalendarBackground: Color {
+        Color("calendarBackground")
+    }
+    
+    // 工具栏按钮颜色
+    static var customToolbarButton: Color {
+        Color("toolbarButton")
+    }
 } 
