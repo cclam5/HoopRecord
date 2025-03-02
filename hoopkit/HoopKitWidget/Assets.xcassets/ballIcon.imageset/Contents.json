@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "Basketball.png",
+      "filename" : "ballIconWhite.svg",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Basketball@2x.png",
+      "filename" : "ballIconWhite 1.svg",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Basketball@3x.png",
+      "filename" : "ballIconWhite 2.svg",
       "idiom" : "universal",
       "scale" : "3x"
     }

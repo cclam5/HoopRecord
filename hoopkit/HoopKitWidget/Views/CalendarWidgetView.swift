@@ -9,7 +9,20 @@ struct CalendarWidgetView: View {
     private let gridColumns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
     
     var body: some View {
-        VStack(spacing: family == .systemSmall ? 8 : 10) {
+        Group {
+            if family == .systemSmall {
+                smallSizeLayout
+            } else {
+                mediumSizeLayout
+            }
+        }
+        .padding(.horizontal, family == .systemSmall ? 12 : 16)
+        .padding(.vertical, family == .systemSmall ? 6 : 8)
+    }
+    
+    // 小尺寸布局
+    private var smallSizeLayout: some View {
+        VStack(spacing: 8) {
             // 日历网格
             LazyVGrid(columns: gridColumns, spacing: 4) {
                 ForEach(daysInMonth(), id: \.self) { date in
@@ -17,7 +30,7 @@ struct CalendarWidgetView: View {
                         WidgetDayCell(
                             record: recordForDate(date),
                             isToday: calendar.isDateInToday(date),
-                            size: family == .systemSmall ? 16 : 24
+                            size: 16
                         )
                     } else {
                         Color.clear
@@ -25,23 +38,79 @@ struct CalendarWidgetView: View {
                     }
                 }
             }
+            .padding(.top, 4)
             
             // 统计信息
             HStack {
                 Spacer()
                 Text("\(records.count)次")
-                    .font(.system(size: family == .systemSmall ? 12 : 13))
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.secondary)
                 Text("·")
                     .foregroundColor(.secondary)
                 Text("日均\(averageHoursPerDay, specifier: "%.1f")时")
-                    .font(.system(size: family == .systemSmall ? 12 : 13))
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.secondary)
                 Spacer()
             }
+            .padding(.bottom, 2)
         }
-        .padding(.horizontal, family == .systemSmall ? 12 : 16)
-        .padding(.vertical, family == .systemSmall ? 8 : 12)
+    }
+    
+    // 中尺寸布局
+    private var mediumSizeLayout: some View {
+        VStack(spacing: 0) {
+            // 标题
+            HStack {
+                Text("HoopMemo")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(.themeColor)
+                Spacer()
+                Text("月度统计")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.secondary)
+            }
+            .padding(.top, 10)
+            .padding(.bottom, 6)
+            
+            // 主要内容
+            HStack(spacing: 16) {
+                // 左侧统计信息
+                VStack {
+                    Spacer()
+                    HStack(spacing: 4) {
+                        Text("\(records.count)次")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(.secondary)
+                        Text("·")
+                            .foregroundColor(.secondary)
+                        Text("日均\(averageHoursPerDay, specifier: "%.1f")时")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                }
+                .frame(width: 110)
+                
+                // 右侧日历网格
+                LazyVGrid(columns: gridColumns, spacing: 3) {
+                    ForEach(daysInMonth(), id: \.self) { date in
+                        if let date = date {
+                            WidgetDayCell(
+                                record: recordForDate(date),
+                                isToday: calendar.isDateInToday(date),
+                                size: 20
+                            )
+                        } else {
+                            Color.clear
+                                .aspectRatio(1, contentMode: .fit)
+                        }
+                    }
+                }
+                .padding(.vertical, 8)
+                .frame(maxWidth: .infinity)
+            }
+        }
     }
     
     private func recordForDate(_ date: Date) -> BasketballRecord? {
@@ -96,10 +165,10 @@ struct WidgetDayCell: View {
                 .overlay(
                     Group {
                         if record != nil {
-                            Image("ballwhite")
+                            Image("ballIcon")
                                 .resizable()
                                 .scaledToFill()
-                                .frame(width: size * 1.25, height: size * 1.25)
+                                .frame(width: size * 1.0, height: size * 1.0)
                                 .clipped()
                         }
                     }

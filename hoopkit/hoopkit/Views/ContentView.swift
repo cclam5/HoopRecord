@@ -86,7 +86,6 @@ struct ContentView: View {
                 Image("ballIcon")
                     .foregroundColor(.customToolbarButton)
                     .imageScale(.medium)
-                    .rotationEffect(.degrees(90))
                 
                 // 右侧按钮组
                 HStack {
