@@ -9,7 +9,7 @@ struct SettingsView: View {
     @State private var showingUserAgreement = false
     @State private var showingPrivacyPolicy = false
     @State private var showingAboutUs = false
-    @State private var showingComponents = false
+    @State private var showingHelp = false
     @State private var showToast = false
     @State private var toastMessage = ""
     
@@ -76,9 +76,9 @@ struct SettingsView: View {
                     }
                     .listRowBackground(Color.customListBackground)
                     
-                    Button(action: { showingAboutUs = true }) {
+                    Button(action: { showingHelp = true }) {
                         HStack {
-                            Text("关于我们")
+                            Text("使用帮助")
                                 .foregroundColor(.customPrimaryText)
                             Spacer()
                             Image(systemName: "chevron.right")
@@ -87,10 +87,10 @@ struct SettingsView: View {
                         }
                     }
                     .listRowBackground(Color.customListBackground)
-
-                    Button(action: { showingComponents = true }) {
+                    
+                    Button(action: { showingAboutUs = true }) {
                         HStack {
-                            Text("组件")
+                            Text("关于我们")
                                 .foregroundColor(.customPrimaryText)
                             Spacer()
                             Image(systemName: "chevron.right")
@@ -217,11 +217,11 @@ struct SettingsView: View {
         .sheet(isPresented: $showingPrivacyPolicy) {
             PrivacyPolicyView()
         }
+        .sheet(isPresented: $showingHelp) {
+            HelpView()
+        }
         .sheet(isPresented: $showingAboutUs) {
             AboutUsView()
-        }
-        .sheet(isPresented: $showingComponents) {
-            ComponentsView()
         }
     }
     
@@ -236,7 +236,7 @@ struct SettingsView: View {
     private func shareApp() {
         // 实现分享功能
         let activityVC = UIActivityViewController(
-            activityItems: ["HoopKit - 你的篮球记录伙伴", URL(string: "https://apps.apple.com/app/yourappid")!],
+            activityItems: ["HoopMemo - 你的篮球记录伙伴", URL(string: "https://apps.apple.com/app/yourappid")!],
             applicationActivities: nil
         )
         
@@ -256,7 +256,7 @@ struct SettingsView: View {
     
     private func sendFeedback() {
         // 发送反馈邮件
-        if let url = URL(string: "mailto:support@example.com?subject=HoopKit反馈与建议") {
+        if let url = URL(string: "mailto:support@example.com?subject=HoopMemo反馈与建议") {
             UIApplication.shared.open(url)
         }
     }
@@ -340,14 +340,14 @@ struct AboutUsView: View {
                         .frame(width: 100, height: 100)
                         .cornerRadius(20)
                     
-                    Text("HoopKit")
+                    Text("HoopMemo")
                         .font(.title2)
                         .fontWeight(.bold)
                     
                     Text("版本 1.0.0")
                         .foregroundColor(.secondary)
                     
-                    Text("HoopKit 是一款专注于篮球运动记录的应用，帮助您追踪每一次篮球活动，记录您的进步。")
+                    Text("HoopMemo 是一款专注于篮球运动记录的应用，帮助您追踪每一次篮球活动，记录您的进步。")
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                         .foregroundColor(.secondary)
@@ -366,6 +366,82 @@ struct AboutUsView: View {
             }
         }
         .preferredColorScheme(themeManager.currentTheme.colorScheme)
+    }
+}
+
+// 使用帮助视图
+struct HelpView: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var themeManager: ThemeManager
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    Text("使用帮助")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .padding(.bottom)
+                    
+                    Group {
+                        helpSection(
+                            title: "记录篮球活动",
+                            titleIcon: "basketball",
+                            content: "点击主界面下方的加号按钮，可以记录新的篮球活动。填写活动时长、强度等信息，并可以添加心得和标签。"
+                        )
+                        
+                        helpSection(
+                            title: "查看统计",
+                            titleIcon: "chart.bar.fill",
+                            content: "点击主界面左上角的统计图标，可以查看你的篮球活动统计信息，包括月度统计和详细数据。"
+                        )
+                        
+                        helpSection(
+                            title: "搜索记录",
+                            titleIcon: "magnifyingglass",
+                            content: "点击主界面右上角的搜索图标，可以搜索历史记录，支持按日期、标签等条件筛选。"
+                        )
+                        
+                        helpSection(
+                            title: "添加小组件",
+                            titleIcon: "square.3.layers.3d",
+                            content: "长按主屏幕空白处，点击左上角的\"+\"号，搜索\"HoopMemo\"，选择合适尺寸的小组件添加到主屏幕，随时查看你的篮球记录。"
+                        )
+                        
+                    }
+                    .padding(.horizontal)
+                }
+                .padding()
+            }
+            .navigationTitle("使用帮助")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark")
+                            .foregroundColor(.themeColor)
+                    }
+                }
+            }
+        }
+        .preferredColorScheme(themeManager.currentTheme.colorScheme)
+    }
+    
+    private func helpSection(title: String, titleIcon: String? = nil, content: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                if let icon = titleIcon {
+                    Image(systemName: icon)
+                        .foregroundColor(.themeColor)
+                }
+                Text(title)
+                    .font(.headline)
+            }
+            Text(content)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 }
 
