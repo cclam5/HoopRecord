@@ -76,18 +76,6 @@ struct SettingsView: View {
                     }
                     .listRowBackground(Color.customListBackground)
                     
-                    Button(action: { showingHelp = true }) {
-                        HStack {
-                            Text("使用帮助")
-                                .foregroundColor(.customPrimaryText)
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 13))
-                                .foregroundColor(.customSecondaryText)
-                        }
-                    }
-                    .listRowBackground(Color.customListBackground)
-                    
                     Button(action: { showingAboutUs = true }) {
                         HStack {
                             Text("关于我们")
@@ -216,9 +204,6 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showingPrivacyPolicy) {
             PrivacyPolicyView()
-        }
-        .sheet(isPresented: $showingHelp) {
-            HelpView()
         }
         .sheet(isPresented: $showingAboutUs) {
             AboutUsView()
@@ -366,82 +351,6 @@ struct AboutUsView: View {
             }
         }
         .preferredColorScheme(themeManager.currentTheme.colorScheme)
-    }
-}
-
-// 使用帮助视图
-struct HelpView: View {
-    @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var themeManager: ThemeManager
-    
-    var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    Text("使用帮助")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .padding(.bottom)
-                    
-                    Group {
-                        helpSection(
-                            title: "记录篮球活动",
-                            titleIcon: "basketball",
-                            content: "点击主界面下方的加号按钮，可以记录新的篮球活动。填写活动时长、强度等信息，并可以添加心得和标签。"
-                        )
-                        
-                        helpSection(
-                            title: "查看统计",
-                            titleIcon: "chart.bar.fill",
-                            content: "点击主界面左上角的统计图标，可以查看你的篮球活动统计信息，包括月度统计和详细数据。"
-                        )
-                        
-                        helpSection(
-                            title: "搜索记录",
-                            titleIcon: "magnifyingglass",
-                            content: "点击主界面右上角的搜索图标，可以搜索历史记录，支持按日期、标签等条件筛选。"
-                        )
-                        
-                        helpSection(
-                            title: "添加小组件",
-                            titleIcon: "square.3.layers.3d",
-                            content: "长按主屏幕空白处，点击左上角的\"+\"号，搜索\"HoopMemo\"，选择合适尺寸的小组件添加到主屏幕，随时查看你的篮球记录。"
-                        )
-                        
-                    }
-                    .padding(.horizontal)
-                }
-                .padding()
-            }
-            .navigationTitle("使用帮助")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "xmark")
-                            .foregroundColor(.themeColor)
-                    }
-                }
-            }
-        }
-        .preferredColorScheme(themeManager.currentTheme.colorScheme)
-    }
-    
-    private func helpSection(title: String, titleIcon: String? = nil, content: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                if let icon = titleIcon {
-                    Image(systemName: icon)
-                        .foregroundColor(.themeColor)
-                }
-                Text(title)
-                    .font(.headline)
-            }
-            Text(content)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
     }
 }
 
