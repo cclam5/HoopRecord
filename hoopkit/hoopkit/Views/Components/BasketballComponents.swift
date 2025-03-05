@@ -23,7 +23,7 @@ struct GameTypeSelector: View {
                                 .foregroundColor(.customPrimaryText)
                             if selectedType == type {
                                 Image(systemName: "checkmark")
-                                    .foregroundColor(.customBrandPrimary)
+                                    .foregroundColor(.checkmarkColor)
                             }
                         }
                     }
@@ -63,12 +63,12 @@ struct IntensityControl: View {
                         Button(action: { intensity = index }) {
                             Image(systemName: index <= intensity ? "flame.fill" : "flame")
                                 .font(ViewStyles.labelFont)
-                                .foregroundColor(index <= intensity ? .customBrandPrimary : .customSecondaryText)
+                                .foregroundColor(index <= intensity ? .intensityColor : .customSecondaryText)
                         }
                     } else {
                         Image(systemName: index <= intensity ? "flame.fill" : "flame")
                             .font(ViewStyles.labelFont)
-                            .foregroundColor(index <= intensity ? .customBrandPrimary : .customSecondaryText)
+                            .foregroundColor(index <= intensity ? .intensityColor : .customSecondaryText)
                     }
                 }
             }

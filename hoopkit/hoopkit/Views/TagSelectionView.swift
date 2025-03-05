@@ -33,7 +33,7 @@ struct TagSelectionView: View {
                             Spacer()
                             if selectedTags.contains(tag) {
                                 Image(systemName: "checkmark")
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(.checkmarkColor)
                             }
                         }
                         .contentShape(Rectangle())

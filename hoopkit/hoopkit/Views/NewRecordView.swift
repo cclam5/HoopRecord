@@ -143,7 +143,7 @@ struct NewRecordView: View {
                 }) {
                     Image(systemName: "checkmark")
                         .font(.system(size: 13))
-                        .foregroundColor(.customBrandPrimary)
+                        .foregroundColor(.checkmarkColor)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 3)
                         .background(Color.customBrandPrimary.opacity(0.1))
