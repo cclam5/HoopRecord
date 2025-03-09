@@ -469,7 +469,7 @@ struct StatisticsView: View {
                             .padding(.vertical, 4)
                             .background(Color.customCardBackground)
                             .frame(width: 65)
-                            .presentationCompactAdaptation(.popover)
+                            .modifier(PresentationCompactAdaptationModifier())
                         }
                     }
                     .padding(.bottom, 4)
@@ -1074,6 +1074,28 @@ struct MonthlyDistributionChart: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy年M月d日"
         return formatter.string(from: date)
+    }
+}
+
+extension View {
+    @ViewBuilder
+    func `if`<Transform: View>(_ condition: Bool, transform: (Self) -> Transform) -> some View {
+        if condition {
+            transform(self)
+        } else {
+            self
+        }
+    }
+}
+
+// 添加自定义修饰符
+struct PresentationCompactAdaptationModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 16.4, *) {
+            content.presentationCompactAdaptation(.popover)
+        } else {
+            content
+        }
     }
 }
 

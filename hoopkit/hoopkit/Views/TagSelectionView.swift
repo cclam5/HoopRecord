@@ -1,6 +1,18 @@
 import SwiftUI
 import CoreData
 
+struct TagSelectionToolbarModifier: ViewModifier {
+    let dismiss: DismissAction
+    
+    func body(content: Content) -> some View {
+        content.toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("完成", action: { dismiss() })
+            }
+        }
+    }
+}
+
 struct TagSelectionView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.dismiss) private var dismiss
@@ -19,8 +31,8 @@ struct TagSelectionView: View {
                         .onSubmit {
                             addTagIfNeeded()
                         }
-                        .onChange(of: newTagName) { oldValue, newValue in
-                            if newValue.last == " " {
+                        .onChange(of: newTagName) { value in
+                            if value.last == " " {
                                 addTagIfNeeded()
                             }
                         }
@@ -45,13 +57,7 @@ struct TagSelectionView: View {
             }
             .navigationTitle("选择标签")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("完成") {
-                        dismiss()
-                    }
-                }
-            }
+            .modifier(TagSelectionToolbarModifier(dismiss: dismiss))
             .alert("错误", isPresented: $showError) {
                 Button("确定", role: .cancel) { }
             } message: {

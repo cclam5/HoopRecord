@@ -29,6 +29,8 @@ struct RecordDetailView: View {
     @State private var showingError = false
     @State private var errorMessage = ""
     
+    @State private var showingShareView = false  // 添加状态变量
+    
     init(record: BasketballRecord) {
         self.record = record
         _editedGameType = State(initialValue: record.gameType ?? "")
@@ -70,7 +72,7 @@ struct RecordDetailView: View {
                                         .font(ViewStyles.labelFont)
                                         .labelsHidden()
                                         .fixedSize()
-                                        .scaleEffect(0.8)
+                                        .scaleEffect(0.7)
                                         .frame(width: 155, height: 30)
                                         .cornerRadius(ViewStyles.cornerRadius)
                                 } else {
@@ -98,21 +100,15 @@ struct RecordDetailView: View {
                     .padding(.horizontal)
                     .padding(.vertical, ViewStyles.smallPadding)
             }
-            .navigationTitle("")  // 移除标题
-            .navigationBarTitleDisplayMode(.inline)  // 使用 inline 模式
+            .navigationTitle("记录详情")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .principal) {  // 使用 principal 位置
-                    Text("记录详情")
-                        .font(.headline)
-                }
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: {
                         if isEditing {
                             if hasUnsavedChanges {
-                                HapticManager.medium()
                                 showingDiscardAlert = true
                             } else {
-                                HapticManager.medium()
                                 withAnimation {
                                     isEditing = false
                                 }
@@ -134,33 +130,43 @@ struct RecordDetailView: View {
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    if !isEditing {
-                        Button(action: {
-                            HapticManager.medium()
-                            withAnimation {
-                                isEditing.toggle()
+                    HStack(spacing: 16) {
+                        if !isEditing {
+                            Button(action: { showingShareView = true }) {
+                                Image(systemName: "square.and.arrow.up")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.customSecondaryText)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 3)
+                                    .background(Color.customListBackground)
+                                    .cornerRadius(6)
                             }
-                        }) {
-                            Image(systemName: "pencil")
-                                .font(.system(size: 13))
-                                .foregroundColor(.customSecondaryText)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 3)
-                                .background(Color.customListBackground)
-                                .cornerRadius(6)
-                        }
-                    } else {
-                        Button(action: {
-                            HapticManager.success()
-                            saveChanges()
-                        }) {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 13))
-                                .foregroundColor(.checkmarkColor)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 3)
-                                .background(Color.customBrandPrimary.opacity(0.1))
-                                .cornerRadius(6)
+                            
+                            Button(action: {
+                                withAnimation {
+                                    isEditing = true
+                                }
+                            }) {
+                                Image(systemName: "pencil")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.customSecondaryText)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 3)
+                                    .background(Color.customListBackground)
+                                    .cornerRadius(6)
+                            }
+                        } else {
+                            Button(action: {
+                                saveChanges()
+                            }) {
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.checkmarkColor)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 3)
+                                    .background(Color.customBrandPrimary.opacity(0.1))
+                                    .cornerRadius(6)
+                            }
                         }
                     }
                 }
@@ -197,6 +203,9 @@ struct RecordDetailView: View {
             Button("确定", role: .cancel) { }
         } message: {
             Text(errorMessage)
+        }
+        .sheet(isPresented: $showingShareView) {
+            ShareRecordView(record: record)
         }
     }
     
