@@ -80,12 +80,12 @@ struct CalendarWidgetView: View {
                     Spacer()
                     HStack(spacing: 4) {
                         Text("\(records.count)次")
-                            .font(.system(size: 15, weight: .medium))
+                            .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.secondary)
                         Text("·")
                             .foregroundColor(.secondary)
                         Text("日均\(averageHoursPerDay, specifier: "%.1f")时")
-                            .font(.system(size: 15, weight: .medium))
+                            .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.secondary)
                     }
                     Spacer()

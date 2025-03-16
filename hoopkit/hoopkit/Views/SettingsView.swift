@@ -1,10 +1,11 @@
 import SwiftUI
+import UIKit
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
     @StateObject private var themeManager = ThemeManager.shared
     @AppStorage("language") private var language = "zh" // 默认中文
-    @State private var showingLanguagePicker = false
     @State private var showingThemePicker = false
     @State private var showingUserAgreement = false
     @State private var showingPrivacyPolicy = false
@@ -18,17 +19,12 @@ struct SettingsView: View {
             List {
                 // 偏好设置
                 Section {
-                    Button(action: { showingLanguagePicker = true }) {
-                        HStack {
-                            Text("语言选择")
-                                .foregroundColor(.customPrimaryText)
-                            Spacer()
-                            Text(language == "zh" ? "中文" : "English")
-                                .foregroundColor(.customSecondaryText)
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 13))
-                                .foregroundColor(.customSecondaryText)
-                        }
+                    HStack {
+                        Text("语言")
+                            .foregroundColor(.customPrimaryText)
+                        Spacer()
+                        Text("中文")
+                            .foregroundColor(.customSecondaryText)
                     }
                     .listRowBackground(Color.customListBackground)
                     
@@ -94,7 +90,7 @@ struct SettingsView: View {
                 
                 // 分享与反馈
                 Section {
-                    Button(action: shareApp) {
+                    Button(action: { shareApp() }) {
                         HStack {
                             Text("分享给好友")
                                 .foregroundColor(.customPrimaryText)
@@ -106,7 +102,7 @@ struct SettingsView: View {
                     }
                     .listRowBackground(Color.customListBackground)
                     
-                    Button(action: rateApp) {
+                    Button(action: { rateApp() }) {
                         HStack {
                             Text("给应用评分")
                                 .foregroundColor(.customPrimaryText)
@@ -118,7 +114,7 @@ struct SettingsView: View {
                     }
                     .listRowBackground(Color.customListBackground)
                     
-                    Button(action: sendFeedback) {
+                    Button(action: { sendFeedback() }) {
                         HStack {
                             Text("反馈与建议")
                                 .foregroundColor(.customPrimaryText)
@@ -140,7 +136,7 @@ struct SettingsView: View {
                         Text("版本")
                             .foregroundColor(.customPrimaryText)
                         Spacer()
-                        Text("1.0.0")
+                        Text("1.0.1")
                             .foregroundColor(.customSecondaryText)
                     }
                     .listRowBackground(Color.customListBackground)
@@ -179,11 +175,6 @@ struct SettingsView: View {
             )
         }
         .preferredColorScheme(themeManager.currentTheme.colorScheme)
-        .confirmationDialog("选择语言", isPresented: $showingLanguagePicker) {
-            Button("中文") { language = "zh" }
-            Button("English") { language = "en" }
-            Button("取消", role: .cancel) { }
-        }
         .confirmationDialog("选择主题", isPresented: $showingThemePicker) {
             Button("浅色") { 
                 themeManager.currentTheme = .light
@@ -219,30 +210,23 @@ struct SettingsView: View {
     }
     
     private func shareApp() {
-        // 实现分享功能
-        let activityVC = UIActivityViewController(
-            activityItems: ["HoopMemo - 你的篮球记录伙伴", URL(string: "https://apps.apple.com/app/yourappid")!],
-            applicationActivities: nil
-        )
-        
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first,
-           let rootVC = window.rootViewController {
-            rootVC.present(activityVC, animated: true)
+        // 使用 SwiftUI 的 openURL 环境值
+        if let url = URL(string: "https://apps.apple.com/cn/app/hoopmemo/id6742833591") {
+            openURL(url)
         }
     }
     
     private func rateApp() {
         // 跳转到 App Store 评分页面
-        if let url = URL(string: "itms-apps://itunes.apple.com/app/yourappid?action=write-review") {
-            UIApplication.shared.open(url)
+        if let url = URL(string: "itms-apps://itunes.apple.com/cn/app/hoopmemo/id6742833591?action=write-review") {
+            openURL(url)
         }
     }
     
     private func sendFeedback() {
         // 发送反馈邮件
-        if let url = URL(string: "mailto:support@example.com?subject=HoopMemo反馈与建议") {
-            UIApplication.shared.open(url)
+        if let url = URL(string: "mailto:249027802@qq.com?subject=HoopMemo反馈与建议") {
+            openURL(url)
         }
     }
     
@@ -263,12 +247,16 @@ struct SettingsView: View {
 struct UserAgreementView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var themeManager: ThemeManager
+    @State private var agreementText: String = "加载中..."
     
     var body: some View {
         NavigationView {
             ScrollView {
-                Text("这里是用户协议内容...")
-                    .padding()
+                VStack(alignment: .leading, spacing: 16) {
+                    // 使用 Text 视图的组合来显示格式化的内容
+                    markdownContentView
+                }
+                .padding()
             }
             .navigationTitle("用户协议")
             .navigationBarTitleDisplayMode(.inline)
@@ -280,8 +268,53 @@ struct UserAgreementView: View {
                     }
                 }
             }
+            .background(Color.customBackground)
+            .onAppear {
+                // 加载 Markdown 文本
+                agreementText = MarkdownLoader.loadMarkdown(from: "UserAgreement")
+            }
         }
         .preferredColorScheme(themeManager.currentTheme.colorScheme)
+    }
+    
+    // 将 Markdown 文本转换为格式化的视图
+    private var markdownContentView: some View {
+        let lines = agreementText.components(separatedBy: "\n")
+        
+        return VStack(alignment: .leading, spacing: 12) {
+            ForEach(0..<lines.count, id: \.self) { index in
+                let line = lines[index]
+                
+                if line.hasPrefix("# ") {
+                    // 主标题
+                    Text(line.replacingOccurrences(of: "# ", with: ""))
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .padding(.bottom, 8)
+                        .foregroundColor(.customPrimaryText)
+                } else if line.hasPrefix("## ") {
+                    // 副标题
+                    Text(line.replacingOccurrences(of: "## ", with: ""))
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .padding(.top, 8)
+                        .padding(.bottom, 4)
+                        .foregroundColor(.customPrimaryText)
+                } else if line.hasPrefix("- ") {
+                    // 列表项
+                    HStack(alignment: .top) {
+                        Text("•")
+                            .foregroundColor(.customPrimaryText)
+                        Text(line.replacingOccurrences(of: "- ", with: ""))
+                            .foregroundColor(.customPrimaryText)
+                    }
+                } else if !line.isEmpty {
+                    // 普通文本
+                    Text(line)
+                        .foregroundColor(.customPrimaryText)
+                }
+            }
+        }
     }
 }
 
@@ -289,12 +322,16 @@ struct UserAgreementView: View {
 struct PrivacyPolicyView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var themeManager: ThemeManager
+    @State private var privacyPolicyText: String = "加载中..."
     
     var body: some View {
         NavigationView {
             ScrollView {
-                Text("这里是隐私政策内容...")
-                    .padding()
+                VStack(alignment: .leading, spacing: 16) {
+                    // 使用 Text 视图的组合来显示格式化的内容
+                    markdownContentView
+                }
+                .padding()
             }
             .navigationTitle("隐私政策")
             .navigationBarTitleDisplayMode(.inline)
@@ -306,8 +343,61 @@ struct PrivacyPolicyView: View {
                     }
                 }
             }
+            .background(Color.customBackground)
+            .onAppear {
+                // 加载 Markdown 文本
+                privacyPolicyText = MarkdownLoader.loadMarkdown(from: "PrivacyPolicy")
+            }
         }
         .preferredColorScheme(themeManager.currentTheme.colorScheme)
+    }
+    
+    // 将 Markdown 文本转换为格式化的视图
+    private var markdownContentView: some View {
+        let lines = privacyPolicyText.components(separatedBy: "\n")
+        
+        return VStack(alignment: .leading, spacing: 12) {
+            ForEach(0..<lines.count, id: \.self) { index in
+                let line = lines[index]
+                
+                if line.hasPrefix("# ") {
+                    // 主标题
+                    Text(line.replacingOccurrences(of: "# ", with: ""))
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .padding(.bottom, 8)
+                        .foregroundColor(.customPrimaryText)
+                } else if line.hasPrefix("## ") {
+                    // 副标题
+                    Text(line.replacingOccurrences(of: "## ", with: ""))
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .padding(.top, 8)
+                        .padding(.bottom, 4)
+                        .foregroundColor(.customPrimaryText)
+                } else if line.hasPrefix("### ") {
+                    // 三级标题
+                    Text(line.replacingOccurrences(of: "### ", with: ""))
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .padding(.top, 6)
+                        .padding(.bottom, 2)
+                        .foregroundColor(.customPrimaryText)
+                } else if line.hasPrefix("- ") {
+                    // 列表项
+                    HStack(alignment: .top) {
+                        Text("•")
+                            .foregroundColor(.customPrimaryText)
+                        Text(line.replacingOccurrences(of: "- ", with: ""))
+                            .foregroundColor(.customPrimaryText)
+                    }
+                } else if !line.isEmpty {
+                    // 普通文本
+                    Text(line)
+                        .foregroundColor(.customPrimaryText)
+                }
+            }
+        }
     }
 }
 
@@ -329,7 +419,7 @@ struct AboutUsView: View {
                         .font(.title2)
                         .fontWeight(.bold)
                     
-                    Text("版本 1.0.0")
+                    Text("版本 1.0.1")
                         .foregroundColor(.secondary)
                     
                     Text("HoopMemo 是一款专注于篮球运动记录的应用，帮助您追踪每一次篮球活动，记录您的进步。")
