@@ -537,6 +537,14 @@ struct StatisticsView: View {
         .toolbarBackground(.hidden, for: .navigationBar)
         .navigationBarBackButtonHidden(false)
         .background(Color.customBackground)
+        .gesture(
+            DragGesture()
+                .onEnded { gesture in
+                    if gesture.translation.width > 50 {
+                        dismiss()
+                    }
+                }
+        )
         .preferredColorScheme(themeManager.currentTheme.colorScheme)
         .confirmationDialog("选择时间范围", isPresented: $showingTimeRangeSheet, titleVisibility: .hidden) {
             Button("周") {

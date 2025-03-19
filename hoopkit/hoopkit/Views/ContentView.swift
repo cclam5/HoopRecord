@@ -77,6 +77,10 @@ struct ContentView: View {
                         Image(systemName: "chart.bar.fill")
                             .foregroundColor(.customToolbarButton)
                             .imageScale(.medium)
+                            .frame(width: 32, height: 32)
+                            .contentShape(Rectangle())
+                            .background(Color.customCardBackground.opacity(0.1))
+                            .cornerRadius(8)
                     }
                     Spacer()
                 }
@@ -90,7 +94,7 @@ struct ContentView: View {
                 // 右侧按钮组
                 HStack {
                     Spacer()
-                    HStack(spacing: 16) {
+                    HStack(spacing: 8) {
                         Menu {
                             Button(action: {
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -124,6 +128,10 @@ struct ContentView: View {
                             Image(systemName: "ellipsis")
                                 .foregroundColor(.customToolbarButton)
                                 .imageScale(.medium)
+                                .frame(width: 32, height: 32)
+                                .contentShape(Rectangle())
+                                .background(Color.customCardBackground.opacity(0.1))
+                                .cornerRadius(8)
                         }
                         .menuStyle(CompactMenu())
                         
@@ -131,6 +139,10 @@ struct ContentView: View {
                             Image(systemName: "magnifyingglass")
                                 .foregroundColor(.customToolbarButton)
                                 .imageScale(.medium)
+                                .frame(width: 32, height: 32)
+                                .contentShape(Rectangle())
+                                .background(Color.customCardBackground.opacity(0.1))
+                                .cornerRadius(8)
                         }
                     }
                 }

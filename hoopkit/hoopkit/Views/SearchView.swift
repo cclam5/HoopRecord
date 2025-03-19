@@ -131,6 +131,14 @@ struct SearchView: View {
         }
         .navigationBarHidden(true)
         .background(Color.customBackground)
+        .gesture(
+            DragGesture()
+                .onEnded { gesture in
+                    if gesture.translation.width > 50 {
+                        dismiss()
+                    }
+                }
+        )
         .onAppear {
             isSearchFocused = true
             loadSearchHistory()
