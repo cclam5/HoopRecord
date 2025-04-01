@@ -122,20 +122,14 @@ struct StatisticsView: View {
         
         guard let weekStart = calendar.date(byAdding: .day, value: -daysToSubtract, to: selectedDate),
               let weekEnd = calendar.date(byAdding: .day, value: 6, to: weekStart) else {
-            print("获取周日期范围失败")
             return weekDays.map { ($0, 0.0) }
         }
-        
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        print("当前选择周日期范围：\(dateFormatter.string(from: weekStart)) 至 \(dateFormatter.string(from: weekEnd))")
         
         var distribution = Dictionary(uniqueKeysWithValues: weekDays.map { ($0, 0.0) })
         
         // 过滤选中周的记录
         let weeklyRecords = allRecords.filter { record in
             guard let date = record.date else {
-                print("记录日期为空")
                 return false
             }
             
@@ -144,12 +138,8 @@ struct StatisticsView: View {
             let endOfDay = calendar.date(bySettingHour: 23, minute: 59, second: 59, of: weekEnd) ?? weekEnd
             let isInRange = date >= startOfDay && date <= endOfDay
             
-            // 添加调试信息
-            print("检查记录 - 日期: \(dateFormatter.string(from: date)), 是否在范围内: \(isInRange)")
             return isInRange
         }
-        
-        print("选中周符合条件的记录数：\(weeklyRecords.count)")
         
         // 计算每天的时长
         for record in weeklyRecords {
@@ -162,16 +152,10 @@ struct StatisticsView: View {
                 
                 let hours = Double(record.duration) / 60.0
                 distribution[dayName]? += hours
-                
-                // 添加调试信息
-                print("处理记录 - 日期: \(dateFormatter.string(from: date))")
-                print("星期几: \(weekday), 转换后索引: \(index), 对应天数: \(dayName)")
-                print("时长: \(hours)小时")
             }
         }
         
         let result = weekDays.map { ($0, distribution[$0] ?? 0.0) }
-        print("最终数据分布：\(result)")
         
         return result
     }
@@ -188,8 +172,6 @@ struct StatisticsView: View {
             return weekDays.map { ($0, 0.0) }
         }
         
-        print("上周日期范围：\(lastWeekStart) 至 \(lastWeekEnd)")
-        
         var distribution = Dictionary(uniqueKeysWithValues: weekDays.map { ($0, 0.0) })
         
         // 过滤上周的记录（使用 allRecords 而不是 filteredRecords）
@@ -197,8 +179,6 @@ struct StatisticsView: View {
             guard let date = record.date else { return false }
             return date >= lastWeekStart && date <= lastWeekEnd
         }
-        
-        print("上周记录数：\(lastWeekRecords.count)")
         
         for record in lastWeekRecords {
             if let date = record.date {
@@ -360,50 +340,55 @@ struct StatisticsView: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: 8) {
-                // 月份选择器
-                HStack {
-                    Button(action: previousMonth) {
-                        Image(systemName: "chevron.left")
-                            .foregroundColor(.secondary)
-                            .imageScale(.small)
-                    }
-                    
-                    Text(monthString)
-                        .font(.system(.title3, design: .rounded))
-                        .fontWeight(.medium)
-                        .frame(minWidth: 120)
-                    
-                    Button(action: nextMonth) {
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.secondary)
-                            .imageScale(.small)
-                    }
-                }
-                .padding(.vertical, 6)
-                
-                // 统计卡片
-                VStack(alignment: .leading, spacing: 8) {
+            VStack(spacing: 16) { // 增加整体间距
+                // 月份选择器 - 添加卡片效果
+                VStack {
                     HStack {
-                        // 左侧统计信息
+                        Button(action: previousMonth) {
+                            Image(systemName: "chevron.left")
+                                .foregroundColor(.secondary)
+                                .imageScale(.small)
+                        }
+                        
+                        Text(monthString)
+                            .font(.system(.title3, design: .rounded))
+                            .fontWeight(.medium)
+                            .frame(minWidth: 120)
+                        
+                        Button(action: nextMonth) {
+                            Image(systemName: "chevron.right")
+                                .foregroundColor(.secondary)
+                                .imageScale(.small)
+                        }
+                    }
+                    .padding(.vertical, 12) // 增加内边距
+                }
+                // .background(
+                //     RoundedRectangle(cornerRadius: 16)
+                //         .fill(Color.customCardBackground.opacity(0.8))
+                //         .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+                // )
+                .padding(.horizontal)
+                
+                // 统计卡片 - 增强卡片效果
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        // 左侧统计信息 - 改为显示次数和每次平均
                         VStack(alignment: .leading, spacing: 8) {
+                            // 打球次数
                             HStack(spacing: 8) {
-//                                Text(timeRange == .week ? "本周打球" : "本月打球")
-//                                    .foregroundColor(.secondary)
-//                                    .font(.subheadline)
-                                
-                                Text("\(String(format: "%.1f", timeRange == .week ? totalWeeklyHours : monthlyTotalHours))小时")
+                                Text("\(timeRange == .week ? weeklyRecordsCount : filteredRecords.count)次")
                                     .foregroundColor(.themeColor)
                                     .font(.system(size: 25, weight: .semibold))
+                                    .shadow(color: .themeColor.opacity(0.3), radius: 1, x: 0, y: 1)
                             }
                             
+                            // 平均每次时长
                             HStack(spacing: 8) {
-                                Text("日均")
-                                    .foregroundColor(.secondary)
-                                Text(String(format: "%.1f", timeRange == .week ? currentWeekAverage : monthlyAverageHours))
+                                Text(String(format: "%.1f", timeRange == .week ? averagePerSessionWeekly : averagePerSessionMonthly))
                                     .foregroundColor(.secondary)
                                     .fontWeight(.medium)
-                                Text("小时")
+                                Text("小时/次")
                                     .foregroundColor(.secondary)
                                 
                                 // 仅在本周/本月时显示环比数据
@@ -412,12 +397,18 @@ struct StatisticsView: View {
                                         Text(timeRange == .week ? "比上周" : "比上月")
                                             .foregroundColor(.secondary)
                                         Image(systemName: 
-                                            (timeRange == .week ? weekOverWeekChange : monthOverMonthChange) >= 0 ? 
+                                            (timeRange == .week ? sessionDurationChangeWeekly : sessionDurationChangeMonthly) >= 0 ? 
                                             "arrow.up" : "arrow.down"
                                         )
-                                        .foregroundColor(.secondary)
-                                        Text("\(abs(Int(timeRange == .week ? weekOverWeekChange : monthOverMonthChange)))%")
-                                            .foregroundColor(.secondary)
+                                        .foregroundColor(
+                                            (timeRange == .week ? sessionDurationChangeWeekly : sessionDurationChangeMonthly) >= 0 ?
+                                            .green : .red
+                                        )
+                                        Text("\(abs(Int(timeRange == .week ? sessionDurationChangeWeekly : sessionDurationChangeMonthly)))%")
+                                            .foregroundColor(
+                                                (timeRange == .week ? sessionDurationChangeWeekly : sessionDurationChangeMonthly) >= 0 ?
+                                                .green : .red
+                                            )
                                             .fontWeight(.medium)
                                     }
                                 }
@@ -438,10 +429,13 @@ struct StatisticsView: View {
                                     .foregroundColor(.customSecondaryText)
                             }
                             .padding(.horizontal, 12)
-                            .padding(.vertical, 4)
-                            .background(Color.customListBackground)
-                            .clipShape(Capsule())
-                            .frame(width: 65, height: 28)
+                            .padding(.vertical, 6) // 增加垂直内边距
+                            .background(
+                                Capsule()
+                                    .fill(Color.customListBackground)
+                                    .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+                            ) // 添加背景阴影
+                            .frame(width: 65, height: 32)
                         }
                         .popover(isPresented: $showPopover, arrowEdge: .top) {
                             VStack(spacing: 0) {
@@ -472,9 +466,9 @@ struct StatisticsView: View {
                             .modifier(PresentationCompactAdaptationModifier())
                         }
                     }
-                    .padding(.bottom, 4)
+                    .padding(.bottom, 8)
                     
-                    // 周时长分布图
+                    // 统计图表区域
                     if timeRange == .week {
                         WeeklyDistributionChart(data: weeklyDistribution, records: allRecords, selectedDate: selectedDate)
                             .frame(height: 200)
@@ -483,13 +477,16 @@ struct StatisticsView: View {
                             .frame(height: 200)
                     }
                 }
+                .padding(.vertical, 16)
+                .padding(.horizontal)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.customCardBackground)
+                        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 3)
+                )
                 .padding(.horizontal)
                 
-                // 添加间距
-                Spacer()
-                    .frame(height: 4) // 在日历视图前添加额外间距
-                
-                // 日历视图
+                // 日历视图 - 已有卡片效果，增强阴影
                 VStack(alignment: .leading, spacing: 18) {
                     HStack {
                         Text("打球日历")
@@ -514,13 +511,16 @@ struct StatisticsView: View {
                     
                     CalendarView(records: filteredRecords, selectedDate: selectedDate)
                 }
-                .padding(.vertical, 12)
+                .padding(.vertical, 16) // 增加垂直内边距
                 .background(
                     RoundedRectangle(cornerRadius: 16)
                         .fill(Color.customCalendarBackground)
-                        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+                        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 4) // 增强阴影
                 )
                 .padding(.horizontal)
+                
+                // 底部间距
+                Spacer(minLength: 24)
             }
             .padding(.vertical)
         }
@@ -643,6 +643,108 @@ struct StatisticsView: View {
     // 本周日均时长（小时）
     private var currentWeekAverage: Double {
         return totalWeeklyHours / 7.0  // 固定除以7天
+    }
+    
+    // 周记录数量
+    private var weeklyRecordsCount: Int {
+        let calendar = Calendar.current
+        let currentWeekday = calendar.component(.weekday, from: selectedDate)
+        let daysToSubtract = (currentWeekday + 5) % 7 // 计算到周一需要减去的天数
+        
+        guard let weekStart = calendar.date(byAdding: .day, value: -daysToSubtract, to: selectedDate),
+              let weekEnd = calendar.date(byAdding: .day, value: 6, to: weekStart) else {
+            return 0
+        }
+        
+        // 使用日期比较来确保包含整天
+        let startOfDay = calendar.startOfDay(for: weekStart)
+        let endOfDay = calendar.date(bySettingHour: 23, minute: 59, second: 59, of: weekEnd) ?? weekEnd
+        
+        let weeklyRecords = allRecords.filter { record in
+            guard let date = record.date else { return false }
+            return date >= startOfDay && date <= endOfDay
+        }
+        
+        return weeklyRecords.count
+    }
+    
+    // 每次平均时长（周）
+    private var averagePerSessionWeekly: Double {
+        if weeklyRecordsCount == 0 { return 0 }
+        return totalWeeklyHours / Double(weeklyRecordsCount)
+    }
+    
+    // 每次平均时长（月）
+    private var averagePerSessionMonthly: Double {
+        if filteredRecords.isEmpty { return 0 }
+        return monthlyTotalHours / Double(filteredRecords.count)
+    }
+    
+    // 上周每次平均时长变化百分比
+    private var sessionDurationChangeWeekly: Double {
+        let calendar = Calendar.current
+        
+        // 获取当前周和上周的日期范围
+        guard let currentWeekRange = currentWeekRange,
+              let lastWeekStart = calendar.date(byAdding: .day, value: -7, to: currentWeekRange.start),
+              let lastWeekEnd = calendar.date(byAdding: .day, value: -7, to: currentWeekRange.end) else {
+            return 0.0
+        }
+        
+        // 过滤上周的记录
+        let lastWeekRecords = allRecords.filter { record in
+            guard let date = record.date else { return false }
+            return date >= lastWeekStart && date <= lastWeekEnd
+        }
+        
+        // 计算上周的每次平均时长
+        let lastWeekTotalHours = Double(lastWeekRecords.reduce(0) { $0 + Int($1.duration) }) / 60.0
+        let lastWeekAvgPerSession = lastWeekRecords.isEmpty ? 0 : lastWeekTotalHours / Double(lastWeekRecords.count)
+        
+        // 计算变化百分比
+        if lastWeekAvgPerSession == 0 {
+            return averagePerSessionWeekly > 0 ? 100.0 : 0.0
+        }
+        
+        if averagePerSessionWeekly == 0 {
+            return lastWeekAvgPerSession > 0 ? -100.0 : 0.0
+        }
+        
+        return ((averagePerSessionWeekly - lastWeekAvgPerSession) / lastWeekAvgPerSession) * 100.0
+    }
+    
+    // 上月每次平均时长变化百分比
+    private var sessionDurationChangeMonthly: Double {
+        let calendar = Calendar.current
+        
+        // 获取上个月的日期范围
+        guard let lastMonthDate = calendar.date(byAdding: .month, value: -1, to: selectedDate),
+              let lastMonthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: lastMonthDate)),
+              var lastMonthEnd = calendar.date(byAdding: .month, value: 1, to: lastMonthStart) else {
+            return 0.0
+        }
+        lastMonthEnd = calendar.date(byAdding: .day, value: -1, to: lastMonthEnd) ?? lastMonthEnd
+        
+        // 过滤上个月的记录
+        let lastMonthRecords = allRecords.filter { record in
+            guard let date = record.date else { return false }
+            return date >= lastMonthStart && date <= lastMonthEnd
+        }
+        
+        // 计算上个月的每次平均时长
+        let lastMonthTotalHours = Double(lastMonthRecords.reduce(0) { $0 + Int($1.duration) }) / 60.0
+        let lastMonthAvgPerSession = lastMonthRecords.isEmpty ? 0 : lastMonthTotalHours / Double(lastMonthRecords.count)
+        
+        // 计算变化百分比
+        if lastMonthAvgPerSession == 0 {
+            return averagePerSessionMonthly > 0 ? 100.0 : 0.0
+        }
+        
+        if averagePerSessionMonthly == 0 {
+            return lastMonthAvgPerSession > 0 ? -100.0 : 0.0
+        }
+        
+        return ((averagePerSessionMonthly - lastMonthAvgPerSession) / lastMonthAvgPerSession) * 100.0
     }
 }
 
@@ -856,7 +958,6 @@ struct MonthlyDistributionChart: View {
     
     // 获取月度数据
     private var monthlyData: [(String, Double)] {
-        print("正在生成月度数据...")
         let daysInMonth = calendar.range(of: .day, in: .month, for: selectedDate)?.count ?? 30
         var data: [(String, Double)] = []
         
@@ -875,14 +976,6 @@ struct MonthlyDistributionChart: View {
             // 计算该天的总时长（小时）
             let totalHours = Double(dayRecords.reduce(0) { $0 + Int($1.duration) }) / 60.0
             data.append(("\(day)", totalHours))
-            
-            // 打印每天的记录情况
-            print("第 \(day) 天:")
-            print("- 记录数量: \(dayRecords.count)")
-            if !dayRecords.isEmpty {
-                print("- 强度值: \(dayRecords.map { Int($0.intensity) })")
-                print("- 时长: \(totalHours)小时")
-            }
         }
         
         return data
@@ -896,10 +989,7 @@ struct MonthlyDistributionChart: View {
     
     // 获取某天的平均强度
     private func getAverageIntensity(for day: String) -> Int {
-        print("\n计算第 \(day) 天的平均强度:")
-        
         guard let dayNumber = Int(day) else {
-            print("- 日期转换失败")
             return 0
         }
         
@@ -909,7 +999,6 @@ struct MonthlyDistributionChart: View {
         let date = calendar.date(from: components)
         
         guard let date = date else {
-            print("- 日期创建失败")
             return 0
         }
         
@@ -920,11 +1009,6 @@ struct MonthlyDistributionChart: View {
         
         let totalIntensity = dayRecords.reduce(0) { $0 + Int($1.intensity) }
         let averageIntensity = dayRecords.isEmpty ? 0 : totalIntensity / dayRecords.count
-        
-        print("- 找到记录数: \(dayRecords.count)")
-        print("- 总强度: \(totalIntensity)")
-        print("- 平均强度: \(averageIntensity)")
-        print("- 对应颜色: \(Color.getColorForIntensity(averageIntensity))")
         
         return averageIntensity
     }

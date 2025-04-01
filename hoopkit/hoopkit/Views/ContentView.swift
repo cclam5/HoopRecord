@@ -78,9 +78,12 @@ struct ContentView: View {
                             .foregroundColor(.customToolbarButton)
                             .imageScale(.medium)
                             .frame(width: 32, height: 32)
-                            .contentShape(Rectangle())
-                            .background(Color.customCardBackground.opacity(0.1))
-                            .cornerRadius(8)
+                            .background(
+                                Circle()
+                                    .fill(Color.customTagBackground.opacity(0.5))
+                                    .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+                            )
+                            .contentShape(Circle())
                     }
                     Spacer()
                 }
@@ -94,7 +97,7 @@ struct ContentView: View {
                 // 右侧按钮组
                 HStack {
                     Spacer()
-                    HStack(spacing: 8) {
+                    HStack(spacing: 12) {
                         Menu {
                             Button(action: {
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -129,9 +132,12 @@ struct ContentView: View {
                                 .foregroundColor(.customToolbarButton)
                                 .imageScale(.medium)
                                 .frame(width: 32, height: 32)
-                                .contentShape(Rectangle())
-                                .background(Color.customCardBackground.opacity(0.1))
-                                .cornerRadius(8)
+                                .background(
+                                    Circle()
+                                        .fill(Color.customTagBackground.opacity(0.5))
+                                        .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+                                )
+                                .contentShape(Circle())
                         }
                         .menuStyle(CompactMenu())
                         
@@ -140,9 +146,12 @@ struct ContentView: View {
                                 .foregroundColor(.customToolbarButton)
                                 .imageScale(.medium)
                                 .frame(width: 32, height: 32)
-                                .contentShape(Rectangle())
-                                .background(Color.customCardBackground.opacity(0.1))
-                                .cornerRadius(8)
+                                .background(
+                                    Circle()
+                                        .fill(Color.customTagBackground.opacity(0.5))
+                                        .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+                                )
+                                .contentShape(Circle())
                         }
                     }
                 }
