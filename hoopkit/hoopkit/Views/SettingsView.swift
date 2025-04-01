@@ -136,7 +136,7 @@ struct SettingsView: View {
                         Text("版本")
                             .foregroundColor(.customPrimaryText)
                         Spacer()
-                        Text("1.0.1")
+                        Text("1.0.2")
                             .foregroundColor(.customSecondaryText)
                     }
                     .listRowBackground(Color.customListBackground)
@@ -419,7 +419,7 @@ struct AboutUsView: View {
                         .font(.title2)
                         .fontWeight(.bold)
                     
-                    Text("版本 1.0.1")
+                    Text("版本 1.0.2")
                         .foregroundColor(.secondary)
                     
                     Text("HoopMemo 是一款专注于篮球运动记录的应用，帮助您追踪每一次篮球活动，记录您的进步。")
