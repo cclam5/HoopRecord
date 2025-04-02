@@ -74,16 +74,15 @@ struct ContentView: View {
                 // 左侧按钮
                 HStack {
                     NavigationLink(destination: StatisticsView().navigationBarBackButtonHidden(true)) {
-                        Image(systemName: "chart.bar.fill")
+                        Image("BarChart2")
+                            .resizable()
                             .foregroundColor(.customToolbarButton)
-                            .imageScale(.medium)
+                            .aspectRatio(16/9, contentMode: .fit)
                             .frame(width: 32, height: 32)
-                            .background(
-                                Circle()
-                                    .fill(Color.customTagBackground.opacity(0.5))
-                                    .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
-                            )
-                            .contentShape(Circle())
+                            .contentShape(Rectangle())
+                            .background(Color.customCardBackground.opacity(0.1))
+                            .cornerRadius(8)
+
                     }
                     Spacer()
                 }
@@ -132,12 +131,9 @@ struct ContentView: View {
                                 .foregroundColor(.customToolbarButton)
                                 .imageScale(.medium)
                                 .frame(width: 32, height: 32)
-                                .background(
-                                    Circle()
-                                        .fill(Color.customTagBackground.opacity(0.5))
-                                        .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
-                                )
-                                .contentShape(Circle())
+                                .contentShape(Rectangle())
+                                .background(Color.customCardBackground.opacity(0.1))
+                                .cornerRadius(8)
                         }
                         .menuStyle(CompactMenu())
                         
@@ -146,12 +142,9 @@ struct ContentView: View {
                                 .foregroundColor(.customToolbarButton)
                                 .imageScale(.medium)
                                 .frame(width: 32, height: 32)
-                                .background(
-                                    Circle()
-                                        .fill(Color.customTagBackground.opacity(0.5))
-                                        .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
-                                )
-                                .contentShape(Circle())
+                                .contentShape(Rectangle())
+                                .background(Color.customBackground.opacity(0.1))
+                                .cornerRadius(8)
                         }
                     }
                 }
@@ -162,6 +155,12 @@ struct ContentView: View {
         .frame(height: 40)
         .padding(.horizontal, 8)
         .background(Color.customCardBackground)
+        // .overlay(
+        //     Rectangle()
+        //         .frame(height: 1)
+        //         .foregroundColor(Color.gray.opacity(0.2))
+        //         .offset(y: 20)
+        // )
         .shadow(color: Color.black.opacity(0.05), radius: 1, y: 1)
     }
     

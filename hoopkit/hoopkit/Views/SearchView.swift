@@ -46,6 +46,11 @@ struct SearchView: View {
                     Image(systemName: "chevron.left")
                         .foregroundColor(.customToolbarButton)
                         .imageScale(.medium)
+                        .frame(width: 24, height: 24)
+                        .background(
+                            Circle()
+                                .fill(Color.customTagBackground.opacity(0.5))
+                        )
                 }
 
                 HStack {

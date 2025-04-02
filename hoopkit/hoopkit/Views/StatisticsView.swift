@@ -348,6 +348,11 @@ struct StatisticsView: View {
                             Image(systemName: "chevron.left")
                                 .foregroundColor(.secondary)
                                 .imageScale(.small)
+                                .frame(width: 20, height: 20)
+                                .background(
+                                    Circle()
+                                        .fill(Color.gray.opacity(0.15))
+                                )
                         }
                         
                         Text(monthString)
@@ -359,6 +364,11 @@ struct StatisticsView: View {
                             Image(systemName: "chevron.right")
                                 .foregroundColor(.secondary)
                                 .imageScale(.small)
+                                .frame(width: 20, height: 20)
+                                .background(
+                                    Circle()
+                                        .fill(Color.gray.opacity(0.15))
+                                )
                         }
                     }
                     .padding(.vertical, 12) // 增加内边距
@@ -531,6 +541,11 @@ struct StatisticsView: View {
                     Image(systemName: "chevron.left")
                         .foregroundColor(.customToolbarButton)
                         .imageScale(.medium)
+                        .frame(width: 28, height: 28)
+                        .background(
+                            Circle()
+                                .fill(Color.customTagBackground.opacity(0.5))
+                        )
                 }
             }
         }
