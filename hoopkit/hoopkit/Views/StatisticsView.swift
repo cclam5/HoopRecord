@@ -339,171 +339,176 @@ struct StatisticsView: View {
     }
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) { // 增加整体间距
-                // 月份选择器 - 添加卡片效果
-                VStack {
-                    HStack {
-                        Button(action: previousMonth) {
-                            Image(systemName: "chevron.left")
-                                .foregroundColor(.secondary)
-                                .imageScale(.small)
-                                .frame(width: 20, height: 20)
-                                .background(
-                                    Circle()
-                                        .fill(Color.gray.opacity(0.15))
-                                )
-                        }
-                        
-                        Text(monthString)
-                            .font(.system(.title3, design: .rounded))
-                            .fontWeight(.medium)
-                            .frame(minWidth: 120)
-                        
-                        Button(action: nextMonth) {
-                            Image(systemName: "chevron.right")
-                                .foregroundColor(.secondary)
-                                .imageScale(.small)
-                                .frame(width: 20, height: 20)
-                                .background(
-                                    Circle()
-                                        .fill(Color.gray.opacity(0.15))
-                                )
-                        }
-                    }
-                    .padding(.vertical, 12) // 增加内边距
-                }
-                // .background(
-                //     RoundedRectangle(cornerRadius: 16)
-                //         .fill(Color.customCardBackground.opacity(0.8))
-                //         .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
-                // )
-                .padding(.horizontal)
+        GeometryReader { geometry in
+            // 使用 ZStack 并结合明确的定位，而不是 VStack
+            ZStack(alignment: .top) {
+                // 背景色
+                Color.customBackground.ignoresSafeArea()
                 
-                // 统计卡片 - 增强卡片效果
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        // 左侧统计信息 - 改为显示次数和每次平均
-                        VStack(alignment: .leading, spacing: 8) {
-                            // 打球次数
-                            HStack(spacing: 8) {
-                                Text("\(timeRange == .week ? weeklyRecordsCount : filteredRecords.count)次")
-                                    .foregroundColor(.themeColor)
-                                    .font(.system(size: 25, weight: .semibold))
-                                    .shadow(color: .themeColor.opacity(0.3), radius: 1, x: 0, y: 1)
+                // 上半部分内容 - 固定位置
+                VStack(spacing: 16) {
+                    // 月份选择器
+                    VStack {
+                        HStack {
+                            Button(action: previousMonth) {
+                                Image(systemName: "chevron.left")
+                                .foregroundColor(.secondary)
+                                .imageScale(.small)
+                                .frame(width: 20, height: 20)
+                                .background(
+                                    Circle()
+                                        .fill(Color.gray.opacity(0.15))
+                                )
                             }
                             
-                            // 平均每次时长
-                            HStack(spacing: 8) {
-                                Text(String(format: "%.1f", timeRange == .week ? averagePerSessionWeekly : averagePerSessionMonthly))
-                                    .foregroundColor(.secondary)
-                                    .fontWeight(.medium)
-                                Text("小时/次")
-                                    .foregroundColor(.secondary)
+                            Text(monthString)
+                                .font(.system(.title3, design: .rounded))
+                                .fontWeight(.medium)
+                                .frame(minWidth: 120)
+                            
+                            Button(action: nextMonth) {
+                                Image(systemName: "chevron.right")
+                                .foregroundColor(.secondary)
+                                .imageScale(.small)
+                                .frame(width: 20, height: 20)
+                                .background(
+                                    Circle()
+                                        .fill(Color.gray.opacity(0.15))
+                                )
+                            }
+                        }
+                        .padding(.vertical, 8)
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 10)
+                    
+                    // 统计卡片
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            // 左侧统计信息
+                            VStack(alignment: .leading, spacing: 6) {
+                                // 打球次数
+                                HStack(spacing: 8) {
+                                    Text("\(timeRange == .week ? weeklyRecordsCount : filteredRecords.count)次")
+                                        .foregroundColor(.themeColor)
+                                        .font(.system(size: 23, weight: .semibold)) // 减小字体
+                                        .shadow(color: .themeColor.opacity(0.3), radius: 1, x: 0, y: 1)
+                                }
                                 
-                                // 仅在本周/本月时显示环比数据
-                                if isCurrentPeriod {
-                                    HStack(spacing: 4) {
-                                        Text(timeRange == .week ? "比上周" : "比上月")
-                                            .foregroundColor(.secondary)
-                                        Image(systemName: 
-                                            (timeRange == .week ? sessionDurationChangeWeekly : sessionDurationChangeMonthly) >= 0 ? 
-                                            "arrow.up" : "arrow.down"
-                                        )
-                                        .foregroundColor(
-                                            (timeRange == .week ? sessionDurationChangeWeekly : sessionDurationChangeMonthly) >= 0 ?
-                                            .green : .red
-                                        )
-                                        Text("\(abs(Int(timeRange == .week ? sessionDurationChangeWeekly : sessionDurationChangeMonthly)))%")
+                                // 平均每次时长
+                                HStack(spacing: 8) {
+                                    Text(String(format: "%.1f", timeRange == .week ? averagePerSessionWeekly : averagePerSessionMonthly))
+                                        .foregroundColor(.secondary)
+                                        .fontWeight(.medium)
+                                    Text("小时/次")
+                                        .foregroundColor(.secondary)
+                                    
+                                    // 仅在本周/本月时显示环比数据
+                                    if isCurrentPeriod {
+                                        HStack(spacing: 4) {
+                                            Text(timeRange == .week ? "比上周" : "比上月")
+                                                .foregroundColor(.secondary)
+                                            Image(systemName: 
+                                                (timeRange == .week ? sessionDurationChangeWeekly : sessionDurationChangeMonthly) >= 0 ? 
+                                                "arrow.up" : "arrow.down"
+                                            )
                                             .foregroundColor(
                                                 (timeRange == .week ? sessionDurationChangeWeekly : sessionDurationChangeMonthly) >= 0 ?
                                                 .green : .red
                                             )
-                                            .fontWeight(.medium)
-                                    }
-                                }
-                            }
-                            .font(.subheadline)
-                        }
-                        
-                        Spacer()
-                        
-                        // 调整宽度的胶囊样式下拉列表
-                        Button(action: { showPopover = true }) {
-                            HStack(spacing: 4) {
-                                Text(timeRange.title)
-                                    .font(.subheadline)
-                                    .foregroundColor(.customPrimaryText)
-                                Image(systemName: "chevron.down")
-                                    .font(.caption)
-                                    .foregroundColor(.customSecondaryText)
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6) // 增加垂直内边距
-                            .background(
-                                Capsule()
-                                    .fill(Color.customListBackground)
-                                    .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
-                            ) // 添加背景阴影
-                            .frame(width: 65, height: 32)
-                        }
-                        .popover(isPresented: $showPopover, arrowEdge: .top) {
-                            VStack(spacing: 0) {
-                                ForEach([TimeRange.week, TimeRange.month], id: \.self) { range in
-                                    Button {
-                                        withAnimation {
-                                            if range == .week {
-                                                selectedDate = Date()
-                                            }
-                                            timeRange = range
-                                            showPopover = false
+                                            Text("\(abs(Int(timeRange == .week ? sessionDurationChangeWeekly : sessionDurationChangeMonthly)))%")
+                                                .foregroundColor(
+                                                    (timeRange == .week ? sessionDurationChangeWeekly : sessionDurationChangeMonthly) >= 0 ?
+                                                    .green : .red
+                                                )
+                                                .fontWeight(.medium)
                                         }
-                                    } label: {
-                                        Text(range.title)
-                                            .font(.subheadline)
-                                            .foregroundColor(.customPrimaryText)
-                                            .frame(width: 65, height: 36)
-                                    }
-                                    
-                                    if range == .week {
-                                        Divider()
                                     }
                                 }
+                                .font(.subheadline)
                             }
-                            .padding(.vertical, 4)
-                            .background(Color.customCardBackground)
-                            .frame(width: 65)
-                            .modifier(PresentationCompactAdaptationModifier())
+                            
+                            Spacer()
+                            
+                            // 下拉列表
+                            Button(action: { showPopover = true }) {
+                                HStack(spacing: 4) {
+                                    Text(timeRange.title)
+                                        .font(.subheadline)
+                                        .foregroundColor(.customPrimaryText)
+                                    Image(systemName: "chevron.down")
+                                        .font(.caption)
+                                        .foregroundColor(.customSecondaryText)
+                                }
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(
+                                    Capsule()
+                                        .fill(Color.customListBackground)
+                                        .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+                                )
+                                .frame(width: 60, height: 28)
+                            }
+                            .popover(isPresented: $showPopover, arrowEdge: .top) {
+                                // 保持原有 popover 内容
+                                VStack(spacing: 0) {
+                                    ForEach([TimeRange.week, TimeRange.month], id: \.self) { range in
+                                        Button {
+                                            withAnimation {
+                                                if range == .week {
+                                                    selectedDate = Date()
+                                                }
+                                                timeRange = range
+                                                showPopover = false
+                                            }
+                                        } label: {
+                                            Text(range.title)
+                                                .font(.subheadline)
+                                                .foregroundColor(.customPrimaryText)
+                                                .frame(width: 60, height: 32)
+                                        }
+                                        
+                                        if range == .week {
+                                            Divider()
+                                        }
+                                    }
+                                }
+                                .padding(.vertical, 4)
+                                .background(Color.customCardBackground)
+                                .frame(width: 60)
+                                .modifier(PresentationCompactAdaptationModifier())
+                            }
+                        }
+                        .padding(.bottom, 4)
+                        
+                        // 统计图表区域
+                        if timeRange == .week {
+                            WeeklyDistributionChart(data: weeklyDistribution, records: allRecords, selectedDate: selectedDate)
+                                .frame(height: geometry.size.height * 0.25)
+                        } else {
+                            MonthlyDistributionChart(records: filteredRecords, selectedDate: selectedDate)
+                                .frame(height: geometry.size.height * 0.25)
                         }
                     }
-                    .padding(.bottom, 8)
-                    
-                    // 统计图表区域
-                    if timeRange == .week {
-                        WeeklyDistributionChart(data: weeklyDistribution, records: allRecords, selectedDate: selectedDate)
-                            .frame(height: 200)
-                    } else {
-                        MonthlyDistributionChart(records: filteredRecords, selectedDate: selectedDate)
-                            .frame(height: 200)
-                    }
+                    .padding(.vertical, 12)
+                    .padding(.horizontal)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color.customCardBackground)
+                            .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 3)
+                    )
+                    .frame(width: geometry.size.width * 0.9)
                 }
-                .padding(.vertical, 16)
-                .padding(.horizontal)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.customCardBackground)
-                        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 3)
-                )
-                .padding(.horizontal)
+                .frame(height: geometry.size.height * 0.45, alignment: .top) // 固定上半部分高度
                 
-                // 日历视图 - 已有卡片效果，增强阴影
-                VStack(alignment: .leading, spacing: 18) {
+                // 日历视图 - 绝对定位，固定在底部
+                VStack(alignment: .leading, spacing: 10) {
                     HStack {
                         Text("打球日历")
                             .font(.headline)
                             .foregroundColor(.customSecondaryText)
                         Spacer()
-                        // 添加强度图例和标题
+                        // 强度图例
                         HStack(spacing: 8) {
                             Text("强度")
                                 .font(.caption)
@@ -519,20 +524,20 @@ struct StatisticsView: View {
                     }
                     .padding(.horizontal)
                     
+                    // 日历视图 - 自适应高度
                     CalendarView(records: filteredRecords, selectedDate: selectedDate)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                .padding(.vertical, 16) // 增加垂直内边距
+                .padding(.vertical, 12)
                 .background(
                     RoundedRectangle(cornerRadius: 16)
                         .fill(Color.customCalendarBackground)
-                        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 4) // 增强阴影
+                        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 4)
                 )
                 .padding(.horizontal)
-                
-                // 底部间距
-                Spacer(minLength: 24)
+                .frame(maxHeight: geometry.size.height * 0.5)
+                .position(x: geometry.size.width / 2, y: geometry.size.height * 0.75) // 固定位置在屏幕3/4处
             }
-            .padding(.vertical)
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -544,7 +549,7 @@ struct StatisticsView: View {
                         .frame(width: 28, height: 28)
                         .background(
                             Circle()
-                                .fill(Color.customTagBackground.opacity(0.5))
+                                .fill(Color.customListBackground.opacity(0.8))
                         )
                 }
             }

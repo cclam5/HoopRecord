@@ -76,12 +76,12 @@ struct ContentView: View {
                     NavigationLink(destination: StatisticsView().navigationBarBackButtonHidden(true)) {
                         Image("BarChart2")
                             .resizable()
-                            .foregroundColor(.customToolbarButton)
+                            .foregroundColor(.themeColor)
                             .aspectRatio(16/9, contentMode: .fit)
                             .frame(width: 32, height: 32)
                             .contentShape(Rectangle())
-                            .background(Color.customCardBackground.opacity(0.1))
-                            .cornerRadius(8)
+                            .background(Color.customListBackground.opacity(0.8))
+                            .cornerRadius(10)
 
                     }
                     Spacer()
@@ -128,23 +128,23 @@ struct ContentView: View {
                             }
                         } label: {
                             Image(systemName: "ellipsis")
-                                .foregroundColor(.customToolbarButton)
+                                .foregroundColor(.gray.opacity(0.8))
                                 .imageScale(.medium)
                                 .frame(width: 32, height: 32)
                                 .contentShape(Rectangle())
-                                .background(Color.customCardBackground.opacity(0.1))
-                                .cornerRadius(8)
+                                .background(Color.customListBackground.opacity(0.8))
+                                .cornerRadius(10)
                         }
                         .menuStyle(CompactMenu())
                         
                         NavigationLink(destination: SearchView().navigationBarBackButtonHidden(true)) {
                             Image(systemName: "magnifyingglass")
-                                .foregroundColor(.customToolbarButton)
+                                .foregroundColor(.themeColor)
                                 .imageScale(.medium)
                                 .frame(width: 32, height: 32)
                                 .contentShape(Rectangle())
-                                .background(Color.customBackground.opacity(0.1))
-                                .cornerRadius(8)
+                                .background(Color.customListBackground.opacity(0.8))
+                                .cornerRadius(10)
                         }
                     }
                 }

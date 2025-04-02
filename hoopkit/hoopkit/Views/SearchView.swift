@@ -46,10 +46,10 @@ struct SearchView: View {
                     Image(systemName: "chevron.left")
                         .foregroundColor(.customToolbarButton)
                         .imageScale(.medium)
-                        .frame(width: 24, height: 24)
+                        .frame(width: 28, height: 28)
                         .background(
                             Circle()
-                                .fill(Color.customTagBackground.opacity(0.5))
+                                .fill(Color.customListBackground.opacity(0.8))
                         )
                 }
 
