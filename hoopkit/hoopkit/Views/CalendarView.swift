@@ -91,21 +91,25 @@ struct DayCell: View {
     let isToday: Bool
     
     private let todayDotColor = Color(red: 1, green: 0.8, blue: 0.3)  // 偏橙色的黄色
+    
     var body: some View {
         VStack(spacing: 2) {
-            Circle()
-                .stroke(
-                    hasRecord ? 
-                        Color.getColorForIntensity(intensity) : 
-                        Color.clear,
-                    lineWidth: 2.0
-                )
-                .frame(width: 32, height: 32)
-                .overlay(
-                    Text("\(Calendar.current.component(.day, from: date))")
-                        .font(.system(size: 12))
-                        .foregroundColor(.customPrimaryText)
-                )
+            ZStack {
+                // 使用填充背景而不是边框
+                Rectangle()
+                    .fill(
+                        hasRecord ? 
+                            Color.getColorForIntensity(intensity) : 
+                            Color.clear
+                    )
+                    .frame(width: 34, height: 34)
+                    .cornerRadius(10)
+                
+                // 如果有记录且强度高，使用白色文本，否则使用默认文本颜色
+                Text("\(Calendar.current.component(.day, from: date))")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(hasRecord ? .white : Color.customPrimaryText)
+            }
             
             if isToday {
                 Circle()
